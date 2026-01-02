@@ -1,211 +1,27 @@
-<!--柔和奢华 - 烹饪小程序首页-->
-<view class="container">
-  <!-- 状态栏占位 -->
-  <view class="status-bar" style="height: {{statusBarHeight}}px;"></view>
+<!--home.wxml-->
+<view class="page">
+  <view class="content">
+    <!-- 日期显示 -->
+    <view class="date-display">{{currentDate}}</view>
 
-  <!-- 背景装饰层 -->
-  <view class="bg-decoration">
-    <view class="gradient-orb orb-1"></view>
-    <view class="gradient-orb orb-2"></view>
-    <view class="gradient-orb orb-3"></view>
-  </view>
-
-  <!-- 个性化欢迎区域 -->
-  <view class="welcome-section animate-fade-in">
-    <view class="time-greeting">
-      <text class="greeting-icon">{{greetingIcon}}</text>
-      <text class="greeting-text">{{greetingText}}</text>
+    <!-- 问候语 -->
+    <view class="greeting-container">
+      <text class="greeting">{{greeting}}</text>
+      <text class="subtitle">{{subtitle}}</text>
     </view>
-    <text class="welcome-subtitle">今天想要烹饪什么？</text>
-  </view>
 
-  <!-- 今日特别推荐 -->
-  <view class="highlight-section">
-    <view class="highlight-card glass-card animate-scale-in" bindtap="onHighlightTap">
-      <view class="highlight-badge">今日推荐</view>
-      <view class="highlight-content">
-        <view class="highlight-icon">🍜</view>
-        <view class="highlight-info">
-          <text class="highlight-title">法式洋葱汤</text>
-          <text class="highlight-desc">温暖心灵的经典法式浓汤，\n浓郁芝士配焦糖洋葱</text>
-          <view class="highlight-meta">
-            <text class="meta-item">⏱ 45分钟</text>
-            <text class="meta-item">👤 2-3人份</text>
-            <text class="meta-item">⭐️ 入门</text>
-          </view>
+    <!-- 添加记录按钮 -->
+    <view class="action-container">
+      <button class="add-button" bindtap="onAddRecord" hover-class="add-button-hover">
+        <view class="button-content">
+          <text class="button-icon">✦</text>
+          <text class="button-text">记录今日</text>
         </view>
-      </view>
-      <view class="highlight-arrow">→</view>
-    </view>
-  </view>
-
-  <!-- 探索美食世界 -->
-  <view class="explore-section">
-    <view class="section-header animate-slide-up">
-      <text class="section-title">探索美食世界</text>
-      <text class="section-subtitle">按你的心情选择</text>
+      </button>
     </view>
 
-    <view class="explore-grid">
-      <!-- 按场景 -->
-      <view class="explore-category glass-card animate-fade-in" style="animation-delay: 0.2s" bindtap="onExploreTap" data-type="scene">
-        <text class="explore-icon">🏡</text>
-        <text class="explore-title">温馨家常</text>
-        <text class="explore-count">236 道</text>
-        <view class="explore-overlay"></view>
-      </view>
-
-      <view class="explore-category glass-card animate-fade-in" style="animation-delay: 0.3s" bindtap="onExploreTap" data-type="scene">
-        <text class="explore-icon">💝</text>
-        <text class="explore-title">浪漫晚餐</text>
-        <text class="explore-count">89 道</text>
-        <view class="explore-overlay"></view>
-      </view>
-
-      <view class="explore-category glass-card animate-fade-in" style="animation-delay: 0.4s" bindtap="onExploreTap" data-type="scene">
-        <text class="explore-icon">🎉</text>
-        <text class="explore-title">宴客大菜</text>
-        <text class="explore-count">124 道</text>
-        <view class="explore-overlay"></view>
-      </view>
-
-      <view class="explore-category glass-card animate-fade-in" style="animation-delay: 0.5s" bindtap="onExploreTap" data-type="scene">
-        <text class="explore-icon">🌿</text>
-        <text class="explore-title">轻食健康</text>
-        <text class="explore-count">178 道</text>
-        <view class="explore-overlay"></view>
-      </view>
-    </view>
-  </view>
-
-  <!-- 按菜系浏览 -->
-  <view class="cuisine-section">
-    <view class="section-header animate-slide-up" style="animation-delay: 0.3s">
-      <text class="section-title">环球菜系</text>
-      <text class="section-subtitle">品味世界美食</text>
-    </view>
-
-    <scroll-view scroll-x class="cuisine-scroll" show-scrollbar="{{false}}">
-      <view class="cuisine-cards">
-        <view class="cuisine-card glass-card animate-scale-in" style="animation-delay: 0.4s" bindtap="onCuisineTap" data-cuisine="french">
-          <view class="cuisine-flag">🇫🇷</view>
-          <text class="cuisine-name">法式料理</text>
-          <text class="cuisine-signature">优雅与精致</text>
-        </view>
-
-        <view class="cuisine-card glass-card animate-scale-in" style="animation-delay: 0.5s" bindtap="onCuisineTap" data-cuisine="italian">
-          <view class="cuisine-flag">🇮🇹</view>
-          <text class="cuisine-name">意式料理</text>
-          <text class="cuisine-signature">简单即完美</text>
-        </view>
-
-        <view class="cuisine-card glass-card animate-scale-in" style="animation-delay: 0.6s" bindtap="onCuisineTap" data-cuisine="japanese">
-          <view class="cuisine-flag">🇯🇵</view>
-          <text class="cuisine-name">日式料理</text>
-          <text class="cuisine-signature">匠心与禅意</text>
-        </view>
-
-        <view class="cuisine-card glass-card animate-scale-in" style="animation-delay: 0.7s" bindtap="onCuisineTap" data-cuisine="chinese">
-          <view class="cuisine-flag">🇨🇳</view>
-          <text class="cuisine-name">中式料理</text>
-          <text class="cuisine-signature">博大精深</text>
-        </view>
-      </view>
-    </scroll-view>
-  </view>
-
-  <!-- 烹饪技巧速查 -->
-  <view class="skills-section">
-    <view class="section-header animate-slide-up" style="animation-delay: 0.5s">
-      <text class="section-title">烹饪技巧</text>
-      <text class="section-subtitle">从基础到进阶</text>
-    </view>
-
-    <view class="skills-list">
-      <view class="skill-item glass-card animate-fade-in" style="animation-delay: 0.6s" bindtap="onSkillTap" data-skill="knife">
-        <text class="skill-icon">🔪</text>
-        <view class="skill-info">
-          <text class="skill-name">刀工技法</text>
-          <text class="skill-desc">切、片、剁、雕</text>
-        </view>
-        <text class="skill-arrow">›</text>
-      </view>
-
-      <view class="skill-item glass-card animate-fade-in" style="animation-delay: 0.7s" bindtap="onSkillTap" data-skill="heat">
-        <text class="skill-icon">🔥</text>
-        <view class="skill-info">
-          <text class="skill-name">火候控制</text>
-          <text class="skill-desc">炒、煎、炖、煮</text>
-        </view>
-        <text class="skill-arrow">›</text>
-      </view>
-
-      <view class="skill-item glass-card animate-fade-in" style="animation-delay: 0.8s" bindtap="onSkillTap" data-skill="seasoning">
-        <text class="skill-icon">✨</text>
-        <view class="skill-info">
-          <text class="skill-name">调味艺术</text>
-          <text class="skill-desc">酸、甜、苦、辣、咸</text>
-        </view>
-        <text class="skill-arrow">›</text>
-      </view>
-    </view>
-  </view>
-
-  <!-- 本周热门食材 -->
-  <view class="ingredients-section">
-    <view class="section-header animate-slide-up" style="animation-delay: 0.7s">
-      <text class="section-title">时令食材</text>
-      <text class="section-subtitle">当季最鲜美</text>
-    </view>
-
-    <view class="ingredients-grid">
-      <view class="ingredient-tag glass-card animate-scale-in" style="animation-delay: 0.8s" bindtap="onIngredientTap" data-ingredient="truffle">
-        <text class="ingredient-emoji">🍄</text>
-        <text class="ingredient-name">松露</text>
-      </view>
-
-      <view class="ingredient-tag glass-card animate-scale-in" style="animation-delay: 0.85s" bindtap="onIngredientTap" data-ingredient="salmon">
-        <text class="ingredient-emoji">🐟</text>
-        <text class="ingredient-name">三文鱼</text>
-      </view>
-
-      <view class="ingredient-tag glass-card animate-scale-in" style="animation-delay: 0.9s" bindtap="onIngredientTap" data-ingredient="asparagus">
-        <text class="ingredient-emoji">🌱</text>
-        <text class="ingredient-name">芦笋</text>
-      </view>
-
-      <view class="ingredient-tag glass-card animate-scale-in" style="animation-delay: 0.95s" bindtap="onIngredientTap" data-ingredient="lobster">
-        <text class="ingredient-emoji">🦞</text>
-        <text class="ingredient-name">龙虾</text>
-      </view>
-
-      <view class="ingredient-tag glass-card animate-scale-in" style="animation-delay: 1s" bindtap="onIngredientTap" data-ingredient="avocado">
-        <text class="ingredient-emoji">🥑</text>
-        <text class="ingredient-name">牛油果</text>
-      </view>
-
-      <view class="ingredient-tag glass-card animate-scale-in" style="animation-delay: 1.05s" bindtap="onIngredientTap" data-ingredient="blueberry">
-        <text class="ingredient-emoji">🫐</text>
-        <text class="ingredient-name">蓝莓</text>
-      </view>
-    </view>
-  </view>
-
-  <!-- 灵感语录 -->
-  <view class="inspiration-section">
-    <view class="inspiration-card glass-card-dark animate-slide-up" style="animation-delay: 0.9s">
-      <text class="inspiration-icon">✦</text>
-      <text class="inspiration-quote">"烹饪是一种给予的行为，\n是对生活的热爱。"</text>
-      <text class="inspiration-author">— Julia Child</text>
-    </view>
-  </view>
-
-  <!-- 开始烹饪按钮 -->
-  <view class="action-section">
-    <view class="action-button glass-card animate-fade-in" style="animation-delay: 1s" bindtap="onStartCooking">
-      <text class="action-text">开始今天的烹饪</text>
-      <text class="action-icon">→</text>
-    </view>
+    <!-- 底部装饰线 -->
+    <view class="decorative-line"></view>
   </view>
 
   <!-- 流动墨水概念 - 底部Tab栏 -->
