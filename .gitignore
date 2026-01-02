@@ -1,0 +1,7 @@
+# IDE
+.idea/
+.claude/
+
+# WeChat Mini Program
+project.config.json
+project.private.config.json

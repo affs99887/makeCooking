@@ -1,0 +1,1056 @@
+/* 柔和奢华主义 - Soft Luxury 烹饪小程序 */
+
+page {
+  background: #FAF8F5;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+  overflow-x: hidden;
+}
+
+.container {
+  min-height: 100vh;
+  position: relative;
+  padding: 0 32rpx 80rpx;
+  overflow: hidden;
+}
+
+/* 状态栏占位 */
+.status-bar {
+  width: 100%;
+  position: relative;
+  z-index: 10;
+}
+
+/* ========== 背景装饰层 ========== */
+.bg-decoration {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.gradient-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(160rpx);
+  opacity: 0.25;
+  animation: floatGentle 25s ease-in-out infinite;
+}
+
+.orb-1 {
+  width: 700rpx;
+  height: 700rpx;
+  background: radial-gradient(circle, #D4C5E8, #E8D4E5);
+  top: -250rpx;
+  right: -200rpx;
+}
+
+.orb-2 {
+  width: 600rpx;
+  height: 600rpx;
+  background: radial-gradient(circle, #E8C4B8, #F5E6E0);
+  bottom: -150rpx;
+  left: -180rpx;
+  animation-delay: -10s;
+}
+
+.orb-3 {
+  width: 500rpx;
+  height: 500rpx;
+  background: radial-gradient(circle, #B8A9D3, #D4C5E8);
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation-delay: -18s;
+}
+
+@keyframes floatGentle {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.25;
+  }
+  33% {
+    transform: translate(40rpx, -60rpx) scale(1.05);
+    opacity: 0.3;
+  }
+  66% {
+    transform: translate(-30rpx, 50rpx) scale(0.95);
+    opacity: 0.2;
+  }
+}
+
+/* ========== 毛玻璃卡片 ========== */
+.glass-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1rpx solid rgba(184, 169, 211, 0.15);
+  border-radius: 24rpx;
+  backdrop-filter: blur(30rpx) saturate(150%);
+  -webkit-backdrop-filter: blur(30rpx) saturate(150%);
+  box-shadow:
+    0 8rpx 32rpx rgba(184, 169, 211, 0.1),
+    0 2rpx 8rpx rgba(139, 123, 168, 0.06),
+    inset 0 1rpx 0 rgba(255, 255, 255, 0.8);
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  overflow: hidden;
+  z-index: 1;
+}
+
+.glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg,
+    rgba(232, 196, 184, 0.06) 0%,
+    rgba(255, 255, 255, 0.25) 50%,
+    rgba(184, 169, 211, 0.06) 100%);
+  border-radius: 24rpx;
+  pointer-events: none;
+  opacity: 0.6;
+  z-index: -1;
+}
+
+.glass-card-dark {
+  background: rgba(244, 240, 248, 0.7);
+  border: 1rpx solid rgba(184, 169, 211, 0.2);
+}
+
+/* ========== 个性化欢迎区域 ========== */
+.welcome-section {
+  margin-bottom: 48rpx;
+  padding: 20rpx 24rpx 32rpx;
+  position: relative;
+  z-index: 1;
+}
+
+.time-greeting {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-bottom: 16rpx;
+}
+
+.greeting-icon {
+  font-size: 48rpx;
+  animation: rotate 20s linear infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.greeting-text {
+  font-size: 48rpx;
+  font-weight: 300;
+  color: #2D2A32;
+  letter-spacing: 1rpx;
+}
+
+.welcome-subtitle {
+  display: block;
+  font-size: 28rpx;
+  color: #9B8FA8;
+  font-weight: 300;
+  padding-left: 64rpx;
+}
+
+/* ========== 今日推荐卡片 ========== */
+.highlight-section {
+  margin-bottom: 64rpx;
+  position: relative;
+  z-index: 1;
+}
+
+.highlight-card {
+  padding: 48rpx 40rpx;
+  position: relative;
+  background: linear-gradient(135deg,
+    rgba(255, 255, 255, 0.85) 0%,
+    rgba(248, 245, 250, 0.8) 100%);
+}
+
+.highlight-card:active {
+  transform: translateY(-4rpx);
+  box-shadow:
+    0 12rpx 40rpx rgba(184, 169, 211, 0.15),
+    0 4rpx 12rpx rgba(139, 123, 168, 0.1),
+    inset 0 1rpx 0 rgba(255, 255, 255, 0.9);
+}
+
+.highlight-badge {
+  position: absolute;
+  top: 24rpx;
+  right: 24rpx;
+  padding: 8rpx 20rpx;
+  background: linear-gradient(135deg, #B8A9D3, #A08FC4);
+  color: #FFFFFF;
+  font-size: 22rpx;
+  font-weight: 500;
+  border-radius: 100rpx;
+  letter-spacing: 1rpx;
+  box-shadow: 0 4rpx 12rpx rgba(184, 169, 211, 0.25);
+}
+
+.highlight-content {
+  display: flex;
+  gap: 32rpx;
+  align-items: flex-start;
+}
+
+.highlight-icon {
+  font-size: 96rpx;
+  flex-shrink: 0;
+  filter: drop-shadow(0 4rpx 12rpx rgba(184, 169, 211, 0.2));
+}
+
+.highlight-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.highlight-title {
+  font-size: 36rpx;
+  font-weight: 500;
+  color: #2D2A32;
+  letter-spacing: 0.5rpx;
+}
+
+.highlight-desc {
+  font-size: 26rpx;
+  color: #6B5F7A;
+  line-height: 1.6;
+  white-space: pre-line;
+  font-weight: 300;
+}
+
+.highlight-meta {
+  display: flex;
+  gap: 20rpx;
+  flex-wrap: wrap;
+  margin-top: 8rpx;
+}
+
+.meta-item {
+  font-size: 24rpx;
+  color: #B8A9D3;
+  font-weight: 400;
+}
+
+.highlight-arrow {
+  position: absolute;
+  bottom: 24rpx;
+  right: 32rpx;
+  font-size: 40rpx;
+  color: #B8A9D3;
+  font-weight: 300;
+}
+
+/* ========== 区块标题 ========== */
+.section-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+  margin-bottom: 32rpx;
+  padding: 0 8rpx;
+}
+
+.section-title {
+  font-size: 40rpx;
+  font-weight: 500;
+  color: #2D2A32;
+  letter-spacing: 1rpx;
+}
+
+.section-subtitle {
+  font-size: 26rpx;
+  color: #9B8FA8;
+  font-weight: 300;
+}
+
+/* ========== 探索美食世界 ========== */
+.explore-section {
+  margin-bottom: 64rpx;
+  position: relative;
+  z-index: 1;
+}
+
+.explore-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20rpx;
+  padding: 0 8rpx;
+}
+
+.explore-category {
+  padding: 52rpx 32rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  min-height: 220rpx;
+  justify-content: center;
+}
+
+.explore-category:active {
+  transform: translateY(-4rpx) scale(0.98);
+  box-shadow:
+    0 12rpx 40rpx rgba(184, 169, 211, 0.15),
+    0 4rpx 12rpx rgba(139, 123, 168, 0.1);
+}
+
+.explore-icon {
+  font-size: 72rpx;
+  margin-bottom: 20rpx;
+  display: block;
+  filter: drop-shadow(0 4rpx 10rpx rgba(184, 169, 211, 0.2));
+  animation: floatIcon 3.5s ease-in-out infinite;
+}
+
+@keyframes floatIcon {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8rpx);
+  }
+}
+
+.explore-title {
+  font-size: 30rpx;
+  font-weight: 500;
+  color: #2D2A32;
+  margin-bottom: 8rpx;
+  letter-spacing: 0.5rpx;
+}
+
+.explore-count {
+  font-size: 24rpx;
+  color: #B8A9D3;
+  font-weight: 400;
+}
+
+.explore-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4rpx;
+  background: linear-gradient(90deg, #B8A9D3, #E8C4B8);
+  border-radius: 0 0 24rpx 24rpx;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.explore-category:active .explore-overlay {
+  opacity: 0.5;
+}
+
+/* ========== 环球菜系 ========== */
+.cuisine-section {
+  margin-bottom: 64rpx;
+  position: relative;
+  z-index: 1;
+}
+
+.cuisine-scroll {
+  width: 100%;
+  white-space: nowrap;
+}
+
+.cuisine-cards {
+  display: inline-flex;
+  gap: 20rpx;
+  padding: 8rpx 8rpx 16rpx;
+}
+
+.cuisine-card {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  width: 240rpx;
+  padding: 44rpx 32rpx;
+  text-align: center;
+}
+
+.cuisine-card:active {
+  transform: translateY(-4rpx);
+  box-shadow:
+    0 12rpx 40rpx rgba(184, 169, 211, 0.15),
+    0 4rpx 12rpx rgba(139, 123, 168, 0.1);
+}
+
+.cuisine-flag {
+  font-size: 64rpx;
+  margin-bottom: 20rpx;
+  filter: drop-shadow(0 4rpx 10rpx rgba(184, 169, 211, 0.2));
+}
+
+.cuisine-name {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #2D2A32;
+  margin-bottom: 8rpx;
+  letter-spacing: 0.5rpx;
+}
+
+.cuisine-signature {
+  font-size: 22rpx;
+  color: #9B8FA8;
+  font-weight: 300;
+  font-style: italic;
+}
+
+/* ========== 烹饪技巧 ========== */
+.skills-section {
+  margin-bottom: 64rpx;
+  position: relative;
+  z-index: 1;
+}
+
+.skills-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  padding: 0 8rpx;
+}
+
+.skill-item {
+  padding: 32rpx 36rpx;
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+}
+
+.skill-item:active {
+  transform: translateX(8rpx);
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.skill-icon {
+  font-size: 56rpx;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2rpx 8rpx rgba(184, 169, 211, 0.15));
+}
+
+.skill-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+
+.skill-name {
+  font-size: 30rpx;
+  font-weight: 500;
+  color: #2D2A32;
+  letter-spacing: 0.5rpx;
+}
+
+.skill-desc {
+  font-size: 24rpx;
+  color: #9B8FA8;
+  font-weight: 300;
+}
+
+.skill-arrow {
+  font-size: 40rpx;
+  color: #B8A9D3;
+  font-weight: 300;
+  opacity: 0.5;
+}
+
+/* ========== 时令食材 ========== */
+.ingredients-section {
+  margin-bottom: 64rpx;
+  position: relative;
+  z-index: 1;
+}
+
+.ingredients-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  padding: 0 8rpx;
+}
+
+.ingredient-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 20rpx 28rpx;
+  flex-shrink: 0;
+}
+
+.ingredient-tag:active {
+  transform: scale(0.95);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.ingredient-emoji {
+  font-size: 36rpx;
+}
+
+.ingredient-name {
+  font-size: 26rpx;
+  color: #2D2A32;
+  font-weight: 400;
+}
+
+/* ========== 灵感语录 ========== */
+.inspiration-section {
+  margin-bottom: 48rpx;
+  position: relative;
+  z-index: 1;
+  padding: 0 8rpx;
+}
+
+.inspiration-card {
+  padding: 56rpx 44rpx;
+  text-align: center;
+  position: relative;
+}
+
+.inspiration-card::before {
+  background: linear-gradient(135deg,
+    rgba(184, 169, 211, 0.1) 0%,
+    rgba(232, 196, 184, 0.08) 50%,
+    rgba(244, 240, 248, 0.12) 100%);
+}
+
+.inspiration-icon {
+  display: block;
+  font-size: 32rpx;
+  color: #B8A9D3;
+  margin-bottom: 24rpx;
+  animation: sparkle 3s ease-in-out infinite;
+}
+
+@keyframes sparkle {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.1) rotate(15deg);
+  }
+}
+
+.inspiration-quote {
+  display: block;
+  font-size: 32rpx;
+  font-weight: 300;
+  color: #2D2A32;
+  line-height: 1.7;
+  margin-bottom: 24rpx;
+  white-space: pre-line;
+  font-style: italic;
+  letter-spacing: 0.5rpx;
+}
+
+.inspiration-author {
+  display: block;
+  font-size: 24rpx;
+  color: #9B8FA8;
+  font-weight: 400;
+}
+
+/* ========== 行动按钮 ========== */
+.action-section {
+  margin-bottom: 40rpx;
+  position: relative;
+  z-index: 1;
+  padding: 0 8rpx;
+}
+
+.action-button {
+  padding: 40rpx 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg,
+    rgba(184, 169, 211, 0.15) 0%,
+    rgba(232, 196, 184, 0.1) 100%);
+  border: 2rpx solid rgba(184, 169, 211, 0.3);
+}
+
+.action-button:active {
+  transform: scale(0.98);
+  background: linear-gradient(135deg,
+    rgba(184, 169, 211, 0.25) 0%,
+    rgba(232, 196, 184, 0.2) 100%);
+}
+
+.action-text {
+  font-size: 32rpx;
+  font-weight: 500;
+  color: #2D2A32;
+  letter-spacing: 1rpx;
+}
+
+.action-icon {
+  font-size: 40rpx;
+  color: #B8A9D3;
+  font-weight: 300;
+}
+
+/* ========== 流动墨水概念 - 底部Tab栏 ========== */
+.floating-tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 0 48rpx calc(env(safe-area-inset-bottom) + 24rpx);
+  z-index: 999;
+  pointer-events: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.tab-capsule {
+  position: relative;
+  pointer-events: auto;
+  display: flex;
+  padding: 6rpx;
+  gap: 0;
+  border-radius: 60rpx;
+  overflow: visible;
+  min-width: 480rpx;
+
+  /* 毛玻璃效果 */
+  background: rgba(250, 248, 245, 0.65);
+  backdrop-filter: blur(60rpx) saturate(200%);
+  -webkit-backdrop-filter: blur(60rpx) saturate(200%);
+
+  /* 精致边框 */
+  border: 2rpx solid transparent;
+  background-clip: padding-box;
+
+  /* 多层阴影 */
+  box-shadow:
+    0 0 0 1rpx rgba(184, 169, 211, 0.08) inset,
+    0 20rpx 60rpx rgba(184, 169, 211, 0.12),
+    0 8rpx 24rpx rgba(139, 123, 168, 0.08),
+    0 2rpx 8rpx rgba(184, 169, 211, 0.05);
+
+  transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.tab-capsule::before {
+  content: '';
+  position: absolute;
+  top: -2rpx;
+  left: -2rpx;
+  right: -2rpx;
+  bottom: -2rpx;
+  border-radius: 60rpx;
+  background: linear-gradient(135deg,
+    rgba(232, 196, 184, 0.3) 0%,
+    rgba(184, 169, 211, 0.2) 50%,
+    rgba(212, 197, 232, 0.3) 100%);
+  z-index: -1;
+  opacity: 0.4;
+  filter: blur(8rpx);
+}
+
+.tab-capsule::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 20%;
+  right: 20%;
+  height: 2rpx;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.8) 50%,
+    transparent 100%);
+  border-radius: 60rpx 60rpx 0 0;
+  opacity: 0.6;
+}
+
+/* 流动墨水指示器 */
+.ink-flow-indicator {
+  position: absolute;
+  top: 4rpx;
+  left: 4rpx;
+  width: calc(50% - 4rpx);
+  height: calc(100% - 8rpx);
+  border-radius: 54rpx;
+  background: linear-gradient(135deg,
+    rgba(184, 169, 211, 0.35) 0%,
+    rgba(212, 197, 232, 0.25) 50%,
+    rgba(168, 155, 195, 0.3) 100%);
+  box-shadow:
+    0 0 20rpx rgba(184, 169, 211, 0.3) inset,
+    0 8rpx 24rpx rgba(184, 169, 211, 0.15);
+  transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 0;
+}
+
+.ink-flow-indicator::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 54rpx;
+  background: linear-gradient(45deg,
+    rgba(232, 196, 184, 0.2) 0%,
+    rgba(184, 169, 211, 0.25) 25%,
+    rgba(212, 197, 232, 0.15) 50%,
+    rgba(168, 155, 195, 0.2) 75%,
+    rgba(232, 196, 184, 0.2) 100%);
+  background-size: 400% 400%;
+  animation: inkFlow 8s ease-in-out infinite;
+  opacity: 0.6;
+}
+
+@keyframes inkFlow {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Tab 项目 */
+.tab-item {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6rpx;
+  padding: 16rpx 56rpx;
+  border-radius: 54rpx;
+  z-index: 1;
+  cursor: pointer;
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.tab-item:active {
+  transform: scale(0.92);
+}
+
+/* 墨滴涟漪图标 */
+.tab-icon-wrapper {
+  position: relative;
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-today {
+  position: relative;
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 中心墨滴 */
+.ink-drop {
+  width: 10rpx;
+  height: 10rpx;
+  background: radial-gradient(circle, #B8A9D3 0%, #A098C0 100%);
+  border-radius: 50%;
+  position: absolute;
+  z-index: 3;
+  box-shadow: 0 0 8rpx rgba(184, 169, 211, 0.4);
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* 涟漪圆环 */
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5rpx solid #B8A9D3;
+  opacity: 0.3;
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ripple-1 {
+  width: 20rpx;
+  height: 20rpx;
+  z-index: 2;
+}
+
+.ripple-2 {
+  width: 32rpx;
+  height: 32rpx;
+  z-index: 1;
+}
+
+.ripple-3 {
+  width: 44rpx;
+  height: 44rpx;
+  z-index: 0;
+}
+
+/* 激活态 - 墨滴脉冲 */
+.tab-item.active .ink-drop {
+  background: radial-gradient(circle, #8B7BA8 0%, #7A6B9A 100%);
+  box-shadow: 0 0 16rpx rgba(139, 123, 168, 0.6);
+  animation: inkDropPulse 2s ease-in-out infinite;
+}
+
+@keyframes inkDropPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 0.8;
+  }
+}
+
+/* 激活态 - 涟漪扩散 */
+.tab-item.active .ripple {
+  border-color: #8B7BA8;
+  border-width: 2rpx;
+}
+
+.tab-item.active .ripple-1 {
+  animation: rippleExpand 5s ease-out infinite;
+  animation-delay: 0s;
+}
+
+.tab-item.active .ripple-2 {
+  animation: rippleExpand 5s ease-out infinite;
+  animation-delay: 0.8s;
+}
+
+.tab-item.active .ripple-3 {
+  animation: rippleExpand 5s ease-out infinite;
+  animation-delay: 1.6s;
+}
+
+@keyframes rippleExpand {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  40% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+
+/* 悬停效果 */
+.tab-item:not(.active) .ink-drop {
+  opacity: 0.8;
+}
+
+.tab-item:not(.active) .ripple {
+  opacity: 0.25;
+}
+
+/* 柱状图图标 */
+.icon-chart {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 3rpx;
+  height: 40rpx;
+  padding: 4rpx 0;
+}
+
+.chart-bar {
+  width: 7rpx;
+  border-radius: 6rpx 6rpx 2rpx 2rpx;
+  background: linear-gradient(180deg,
+    rgba(184, 169, 211, 0.6) 0%,
+    rgba(184, 169, 211, 0.3) 100%);
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.bar-1 { height: 16rpx; animation-delay: 0s; }
+.bar-2 { height: 28rpx; animation-delay: 0.1s; }
+.bar-3 { height: 36rpx; animation-delay: 0.2s; }
+.bar-4 { height: 24rpx; animation-delay: 0.3s; }
+
+.tab-item.active .chart-bar {
+  background: linear-gradient(180deg,
+    rgba(139, 123, 168, 0.9) 0%,
+    rgba(184, 169, 211, 0.6) 100%);
+  box-shadow: 0 0 8rpx rgba(184, 169, 211, 0.4);
+  animation: barBounce 1.5s ease-in-out infinite;
+}
+
+@keyframes barBounce {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(1.2); }
+}
+
+/* Tab 文字 */
+.tab-label {
+  font-size: 20rpx;
+  font-weight: 500;
+  color: #9B8FA8;
+  letter-spacing: 0.5rpx;
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  opacity: 0.7;
+}
+
+.tab-item.active .tab-label {
+  color: #6B5F7A;
+  font-weight: 600;
+  opacity: 1;
+  transform: scale(1.05);
+  text-shadow: 0 2rpx 8rpx rgba(184, 169, 211, 0.2);
+}
+
+/* 脉冲光晕 */
+.pulse-halo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 140%;
+  height: 140%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    rgba(184, 169, 211, 0.15) 0%,
+    rgba(212, 197, 232, 0.08) 50%,
+    transparent 100%);
+  z-index: -1;
+  animation: pulsate 2.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes pulsate {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.15);
+    opacity: 0.3;
+  }
+}
+
+/* 装饰性漂浮粒子 */
+.float-particle {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    rgba(232, 196, 184, 0.3) 0%,
+    rgba(184, 169, 211, 0.15) 100%);
+  pointer-events: none;
+  z-index: -1;
+  filter: blur(20rpx);
+  animation: floatAround 15s ease-in-out infinite;
+}
+
+.particle-1 {
+  width: 40rpx;
+  height: 40rpx;
+  bottom: 60rpx;
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.particle-2 {
+  width: 60rpx;
+  height: 60rpx;
+  bottom: 80rpx;
+  right: 15%;
+  animation-delay: -5s;
+}
+
+.particle-3 {
+  width: 30rpx;
+  height: 30rpx;
+  bottom: 100rpx;
+  left: 50%;
+  animation-delay: -10s;
+}
+
+@keyframes floatAround {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.3;
+  }
+  25% {
+    transform: translate(20rpx, -30rpx) scale(1.2);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translate(-15rpx, -50rpx) scale(0.9);
+    opacity: 0.4;
+  }
+  75% {
+    transform: translate(30rpx, -20rpx) scale(1.1);
+    opacity: 0.6;
+  }
+}
+
+/* ========== 动画系统 ========== */
+.animate-fade-in {
+  animation: fadeInSoft 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  opacity: 0;
+}
+
+@keyframes fadeInSoft {
+  from {
+    opacity: 0;
+    transform: translateY(20rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slideUpSoft 1.1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  opacity: 0;
+}
+
+@keyframes slideUpSoft {
+  from {
+    opacity: 0;
+    transform: translateY(40rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-scale-in {
+  animation: scaleInSoft 0.9s cubic-bezier(0.34, 1.3, 0.64, 1) forwards;
+  opacity: 0;
+}
+
+@keyframes scaleInSoft {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
