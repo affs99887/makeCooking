@@ -74,3 +74,5 @@ This project must be run in **WeChat Developer Tools** (微信开发者工具). 
 - Code minification: Enabled (JS, WXSS, WXML)
 - Source maps: Uploaded with builds
 - Library version: `trial` (using trial/preview features)
+- 默认使用中文进行回复
+- 小程序项目，样式单位尽可能使用rpx，而不是px
