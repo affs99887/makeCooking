@@ -1,6 +1,8 @@
 // pages/home/home.js
 Page({
   data: {
+    showSplash: true,      // 新增：控制 splash 显示
+    showContent: false,    // 新增：控制内容动画
     currentDate: '',
     greeting: '',
     subtitle: '',
@@ -8,12 +10,34 @@ Page({
   },
 
   onLoad() {
-    this.updateGreeting()
+    // 不立即加载，等待 splash 完成
+    console.log('[Home] Page loaded, waiting for splash')
   },
 
   onShow() {
-    // 每次显示页面时更新问候语
-    this.updateGreeting()
+    // 仅在 splash 已完成时更新
+    if (!this.data.showSplash) {
+      this.updateGreeting()
+    }
+  },
+
+  /**
+   * Splash 完成回调
+   */
+  onSplashComplete(e) {
+    console.log('[Home] Splash complete at:', e.detail.timestamp)
+
+    this.setData({
+      showSplash: false
+    })
+
+    // 延迟 100ms 后显示内容并开始动画
+    setTimeout(() => {
+      this.setData({
+        showContent: true
+      })
+      this.updateGreeting()
+    }, 100)
   },
 
   /**

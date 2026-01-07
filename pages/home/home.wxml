@@ -1,5 +1,13 @@
 <!--home.wxml-->
-<view class="page">
+
+<!-- Splash 启动画面组件 -->
+<splash-screen
+  wx:if="{{showSplash}}"
+  bind:complete="onSplashComplete"
+/>
+
+<!-- 主内容（等待 splash 完成后显示） -->
+<view class="page" wx:if="{{!showSplash}}">
   <view class="content">
     <!-- 日期显示 -->
     <view class="date-display">{{currentDate}}</view>

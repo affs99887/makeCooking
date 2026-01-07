@@ -1,0 +1,35 @@
+<!--splashScreen.wxml-->
+<view class="splash-container {{isFadingOut ? 'fade-out' : ''}}" wx:if="{{!isComplete}}">
+  <!-- 背景渐变层 -->
+  <view class="gradient-backdrop"></view>
+
+  <!-- 飘散的香料粒子 -->
+  <view class="essence-particle particle-1"></view>
+  <view class="essence-particle particle-2"></view>
+  <view class="essence-particle particle-3"></view>
+  <view class="essence-particle particle-4"></view>
+  <view class="essence-particle particle-5"></view>
+
+  <!-- 品牌核心 -->
+  <view class="brand-core">
+    <!-- 中心光晕 -->
+    <view class="core-glow"></view>
+
+    <!-- 品牌名称 -->
+    <view class="brand-name">
+      <text class="brand-text-main">makeCooking</text>
+      <text class="brand-text-sub">用心烹饪 · 记录美好</text>
+    </view>
+
+    <!-- 装饰性环绕圆环 -->
+    <view class="orbit-ring ring-1"></view>
+    <view class="orbit-ring ring-2"></view>
+  </view>
+
+  <!-- 底部提示 -->
+  <view class="loading-hint">
+    <view class="dot dot-1"></view>
+    <view class="dot dot-2"></view>
+    <view class="dot dot-3"></view>
+  </view>
+</view>

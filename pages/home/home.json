@@ -4,5 +4,7 @@
   "backgroundTextStyle": "dark",
   "enablePullDownRefresh": true,
   "disableScroll": false,
-  "usingComponents": {}
+  "usingComponents": {
+    "splash-screen": "/components/splashScreen/splashScreen"
+  }
 }
