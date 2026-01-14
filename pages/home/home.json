@@ -5,6 +5,7 @@
   "enablePullDownRefresh": true,
   "disableScroll": false,
   "usingComponents": {
-    "splash-screen": "/components/splashScreen/splashScreen"
+    "splash-screen": "/components/splashScreen/splashScreen",
+    "record-drawer": "/components/recordDrawer/recordDrawer"
   }
 }

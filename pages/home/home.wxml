@@ -81,4 +81,11 @@
     <view class="float-particle particle-2"></view>
     <view class="float-particle particle-3"></view>
   </view>
+
+  <!-- 记录抽屉组件 -->
+  <record-drawer
+    visible="{{showDrawer}}"
+    bind:close="onDrawerClose"
+    bind:save="onRecordSave"
+  />
 </view>

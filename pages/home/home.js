@@ -6,7 +6,8 @@ Page({
     currentDate: '',
     greeting: '',
     subtitle: '',
-    activeTab: 'today'
+    activeTab: 'today',
+    showDrawer: false      // 新增：控制抽屉显示
   },
 
   onLoad() {
@@ -82,17 +83,39 @@ Page({
    * 添加记录
    */
   onAddRecord() {
-    // TODO: 导航到添加记录页面
-    wx.showToast({
-      title: '即将添加记录',
-      icon: 'none',
-      duration: 2000
+    console.log('[Home] Opening record drawer')
+    this.setData({
+      showDrawer: true
     })
+  },
 
-    // 示例：导航到记录页面（需要先创建该页面）
-    // wx.navigateTo({
-    //   url: '../record/record'
-    // })
+  /**
+   * 关闭记录抽屉
+   */
+  onDrawerClose() {
+    console.log('[Home] Closing record drawer')
+    this.setData({
+      showDrawer: false
+    })
+  },
+
+  /**
+   * 保存记录
+   */
+  onRecordSave(e) {
+    const recordData = e.detail
+    console.log('[Home] Record saved:', recordData)
+
+    // TODO: 保存到本地存储或云端
+    // 示例：保存到本地存储
+    try {
+      let records = wx.getStorageSync('cooking_records') || []
+      records.unshift(recordData) // 添加到数组开头
+      wx.setStorageSync('cooking_records', records)
+      console.log('[Home] Record saved to storage, total:', records.length)
+    } catch (error) {
+      console.error('[Home] Failed to save record:', error)
+    }
   },
 
   /**

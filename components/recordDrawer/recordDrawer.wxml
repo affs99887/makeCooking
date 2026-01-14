@@ -1,0 +1,194 @@
+<!-- components/recordDrawer/recordDrawer.wxml -->
+
+<!-- 遮罩层 -->
+<view class="drawer-mask {{visible ? 'show' : ''}}"
+      bindtap="onMaskTap"
+      wx:if="{{visible || isAnimating}}">
+
+  <!-- 抽屉容器 -->
+  <view class="drawer-container {{visible ? 'show' : ''}}"
+        catchtap="onDrawerTap">
+
+    <!-- 顶部拖动条装饰 -->
+    <view class="drawer-handle">
+      <view class="handle-bar"></view>
+    </view>
+
+    <!-- 标题区域 -->
+    <view class="drawer-header">
+      <view class="header-glow"></view>
+      <text class="drawer-title">今日烹饪记录</text>
+      <text class="drawer-subtitle">Record Your Culinary Journey</text>
+      <view class="title-accent"></view>
+    </view>
+
+    <!-- 滚动内容区 -->
+    <scroll-view class="drawer-content" scroll-y>
+
+      <!-- 烹饪风格选择 -->
+      <view class="section-block">
+        <view class="section-header">
+          <view class="section-icon">◈</view>
+          <text class="section-title">烹饪风格</text>
+          <text class="section-hint">可多选</text>
+        </view>
+
+        <scroll-view class="type-scroll" scroll-x enable-flex>
+          <view class="type-chip {{selectedTypes.includes('Lite') ? 'active' : ''}}"
+                bindtap="onTypeToggle"
+                data-type="Lite">
+            <view class="chip-decorator"></view>
+            <text class="chip-label">清淡</text>
+            <text class="chip-subtitle">Lite</text>
+            <view class="chip-checkmark" wx:if="{{selectedTypes.includes('Lite')}}"></view>
+          </view>
+
+          <view class="type-chip {{selectedTypes.includes('Survice') ? 'active' : ''}}"
+                bindtap="onTypeToggle"
+                data-type="Survice">
+            <view class="chip-decorator"></view>
+            <text class="chip-label">快手菜</text>
+            <text class="chip-subtitle">Survice</text>
+            <view class="chip-checkmark" wx:if="{{selectedTypes.includes('Survice')}}"></view>
+          </view>
+
+          <view class="type-chip {{selectedTypes.includes('Inside') ? 'active' : ''}}"
+                bindtap="onTypeToggle"
+                data-type="Inside">
+            <view class="chip-decorator"></view>
+            <text class="chip-label">入味</text>
+            <text class="chip-subtitle">Inside</text>
+            <view class="chip-checkmark" wx:if="{{selectedTypes.includes('Inside')}}"></view>
+          </view>
+
+          <view class="type-chip {{selectedTypes.includes('Suck') ? 'active' : ''}}"
+                bindtap="onTypeToggle"
+                data-type="Suck">
+            <view class="chip-decorator"></view>
+            <text class="chip-label">浓汁</text>
+            <text class="chip-subtitle">Suck</text>
+            <view class="chip-checkmark" wx:if="{{selectedTypes.includes('Suck')}}"></view>
+          </view>
+
+          <view class="type-chip {{selectedTypes.includes('Cooperation') ? 'active' : ''}}"
+                bindtap="onTypeToggle"
+                data-type="Cooperation">
+            <view class="chip-decorator"></view>
+            <text class="chip-label">合作料理</text>
+            <text class="chip-subtitle">Cooperation</text>
+            <view class="chip-checkmark" wx:if="{{selectedTypes.includes('Cooperation')}}"></view>
+          </view>
+        </scroll-view>
+      </view>
+
+      <!-- 烹饪手法选择（仅在选择Inside时显示） -->
+      <view class="section-block position-section {{showPosition ? 'show' : 'hide'}}" wx:if="{{selectedTypes.includes('Inside')}}">
+        <view class="section-header">
+          <view class="section-icon">◈</view>
+          <text class="section-title">烹饪手法</text>
+          <text class="section-hint">单选</text>
+        </view>
+
+        <view class="position-list">
+          <view class="position-item {{selectedPosition === 'Formal' ? 'active' : ''}}"
+                bindtap="onPositionSelect"
+                data-position="Formal">
+            <view class="position-dot"></view>
+            <view class="position-info">
+              <text class="position-label">正统法</text>
+              <text class="position-subtitle">Formal Technique</text>
+            </view>
+            <view class="position-radio">
+              <view class="radio-inner" wx:if="{{selectedPosition === 'Formal'}}"></view>
+            </view>
+          </view>
+
+          <view class="position-item {{selectedPosition === 'Backin' ? 'active' : ''}}"
+                bindtap="onPositionSelect"
+                data-position="Backin">
+            <view class="position-dot"></view>
+            <view class="position-info">
+              <text class="position-label">反转式</text>
+              <text class="position-subtitle">Backin Style</text>
+            </view>
+            <view class="position-radio">
+              <view class="radio-inner" wx:if="{{selectedPosition === 'Backin'}}"></view>
+            </view>
+          </view>
+
+          <view class="position-item {{selectedPosition === '69' ? 'active' : ''}}"
+                bindtap="onPositionSelect"
+                data-position="69">
+            <view class="position-dot"></view>
+            <view class="position-info">
+              <text class="position-label">对称法</text>
+              <text class="position-subtitle">Symmetric Method</text>
+            </view>
+            <view class="position-radio">
+              <view class="radio-inner" wx:if="{{selectedPosition === '69'}}"></view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 评分系统 -->
+      <view class="section-block">
+        <view class="section-header">
+          <view class="section-icon">⭒</view>
+          <text class="section-title">满意度评分</text>
+        </view>
+
+        <view class="score-display">
+          <text class="score-value">{{currentScore}}</text>
+          <text class="score-unit">分</text>
+          <text class="score-max">/ 4100</text>
+        </view>
+
+        <view class="slider-container">
+          <slider
+            class="score-slider"
+            min="0"
+            max="4100"
+            step="100"
+            value="{{currentScore}}"
+            activeColor="#c3b091"
+            backgroundColor="rgba(195, 176, 145, 0.2)"
+            block-size="28"
+            bindchange="onScoreChange"
+            bindchanging="onScoreChanging"
+          />
+          <view class="slider-track-glow" style="width: {{currentScore / 4100 * 100}}%"></view>
+        </view>
+
+        <view class="score-markers">
+          <text class="marker">0</text>
+          <text class="marker">1000</text>
+          <text class="marker">2000</text>
+          <text class="marker">3000</text>
+          <text class="marker">4100</text>
+        </view>
+      </view>
+
+      <!-- 底部间距 -->
+      <view class="section-spacer"></view>
+
+    </scroll-view>
+
+    <!-- 底部操作区 -->
+    <view class="drawer-footer">
+      <view class="footer-glow"></view>
+      <button class="save-button {{canSave ? 'enabled' : ''}}"
+              bindtap="onSave"
+              disabled="{{!canSave}}"
+              hover-class="button-hover">
+        <view class="button-shimmer"></view>
+        <view class="button-content">
+          <text class="button-icon">✦</text>
+          <text class="button-text">保存记录</text>
+        </view>
+        <view class="button-pulse" wx:if="{{canSave}}"></view>
+      </button>
+    </view>
+
+  </view>
+</view>

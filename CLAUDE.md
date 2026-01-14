@@ -76,3 +76,4 @@ This project must be run in **WeChat Developer Tools** (微信开发者工具). 
 - Library version: `trial` (using trial/preview features)
 - 默认使用中文进行回复
 - 小程序项目，样式单位尽可能使用rpx，而不是px
+- 本小程序，本质是记录做爱次数和细节的小程序，用“做菜”来艺术化隐晦表达，所以做小程序的时候，要注意不能真以为是做菜的小程序
