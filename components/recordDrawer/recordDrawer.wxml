@@ -6,20 +6,32 @@
       wx:if="{{visible || isAnimating}}">
 
   <!-- 抽屉容器 -->
-  <view class="drawer-container {{visible ? 'show' : ''}}"
+  <view class="drawer-container {{isOpen ? 'is-open' : ''}} {{isDragging ? 'is-dragging' : ''}} {{isExpanded ? 'is-expanded' : ''}}"
+        style="transform: translate3d(0, {{drawerTranslate}}px, 0);"
         catchtap="onDrawerTap">
+    <!-- 柔和光晕背景 -->
+    <view class="drawer-ambient">
+      <view class="ambient-orb orb-left"></view>
+      <view class="ambient-orb orb-right"></view>
+      <view class="ambient-sheen"></view>
+    </view>
 
     <!-- 顶部拖动条装饰 -->
-    <view class="drawer-handle">
-      <view class="handle-bar"></view>
+    <view class="drawer-handle"
+          bindtouchstart="onHandleTouchStart"
+          catchtouchmove="onHandleTouchMove"
+          bindtouchend="onHandleTouchEnd"
+          bindtouchcancel="onHandleTouchEnd">
+      <view class="handle-pill"></view>
     </view>
 
     <!-- 标题区域 -->
     <view class="drawer-header">
-      <view class="header-glow"></view>
+      <view class="header-orb header-orb-left"></view>
+      <view class="header-orb header-orb-right"></view>
       <text class="drawer-title">今日烹饪记录</text>
-      <text class="drawer-subtitle">Record Your Culinary Journey</text>
-      <view class="title-accent"></view>
+      <text class="drawer-subtitle">把味道写进日记</text>
+      <view class="header-divider"></view>
     </view>
 
     <!-- 滚动内容区 -->
@@ -28,7 +40,7 @@
       <!-- 烹饪风格选择 -->
       <view class="section-block">
         <view class="section-header">
-          <view class="section-icon">◈</view>
+          <view class="section-icon"></view>
           <text class="section-title">烹饪风格</text>
           <text class="section-hint">可多选</text>
         </view>
@@ -48,7 +60,7 @@
                 data-type="Survice">
             <view class="chip-decorator"></view>
             <text class="chip-label">快手菜</text>
-            <text class="chip-subtitle">Survice</text>
+            <text class="chip-subtitle">Quick</text>
             <view class="chip-checkmark" wx:if="{{selectedTypes.includes('Survice')}}"></view>
           </view>
 
@@ -57,7 +69,7 @@
                 data-type="Inside">
             <view class="chip-decorator"></view>
             <text class="chip-label">入味</text>
-            <text class="chip-subtitle">Inside</text>
+            <text class="chip-subtitle">Infused</text>
             <view class="chip-checkmark" wx:if="{{selectedTypes.includes('Inside')}}"></view>
           </view>
 
@@ -66,7 +78,7 @@
                 data-type="Suck">
             <view class="chip-decorator"></view>
             <text class="chip-label">浓汁</text>
-            <text class="chip-subtitle">Suck</text>
+            <text class="chip-subtitle">Sauce</text>
             <view class="chip-checkmark" wx:if="{{selectedTypes.includes('Suck')}}"></view>
           </view>
 
@@ -75,16 +87,16 @@
                 data-type="Cooperation">
             <view class="chip-decorator"></view>
             <text class="chip-label">合作料理</text>
-            <text class="chip-subtitle">Cooperation</text>
+            <text class="chip-subtitle">Co-op</text>
             <view class="chip-checkmark" wx:if="{{selectedTypes.includes('Cooperation')}}"></view>
           </view>
         </scroll-view>
       </view>
 
       <!-- 烹饪手法选择（仅在选择Inside时显示） -->
-      <view class="section-block position-section {{showPosition ? 'show' : 'hide'}}" wx:if="{{selectedTypes.includes('Inside')}}">
+      <view class="section-block position-section {{showPosition ? 'show' : ''}}" wx:if="{{showPosition}}">
         <view class="section-header">
-          <view class="section-icon">◈</view>
+          <view class="section-icon"></view>
           <text class="section-title">烹饪手法</text>
           <text class="section-hint">单选</text>
         </view>
@@ -96,7 +108,7 @@
             <view class="position-dot"></view>
             <view class="position-info">
               <text class="position-label">正统法</text>
-              <text class="position-subtitle">Formal Technique</text>
+              <text class="position-subtitle">Classic Method</text>
             </view>
             <view class="position-radio">
               <view class="radio-inner" wx:if="{{selectedPosition === 'Formal'}}"></view>
@@ -109,7 +121,7 @@
             <view class="position-dot"></view>
             <view class="position-info">
               <text class="position-label">反转式</text>
-              <text class="position-subtitle">Backin Style</text>
+              <text class="position-subtitle">Reverse Style</text>
             </view>
             <view class="position-radio">
               <view class="radio-inner" wx:if="{{selectedPosition === 'Backin'}}"></view>
@@ -122,7 +134,7 @@
             <view class="position-dot"></view>
             <view class="position-info">
               <text class="position-label">对称法</text>
-              <text class="position-subtitle">Symmetric Method</text>
+              <text class="position-subtitle">Symmetry Method</text>
             </view>
             <view class="position-radio">
               <view class="radio-inner" wx:if="{{selectedPosition === '69'}}"></view>
@@ -134,8 +146,9 @@
       <!-- 评分系统 -->
       <view class="section-block">
         <view class="section-header">
-          <view class="section-icon">⭒</view>
+          <view class="section-icon"></view>
           <text class="section-title">满意度评分</text>
+          <text class="section-hint">滑动评分</text>
         </view>
 
         <view class="score-display">
@@ -151,9 +164,10 @@
             max="4100"
             step="100"
             value="{{currentScore}}"
-            activeColor="#c3b091"
-            backgroundColor="rgba(195, 176, 145, 0.2)"
-            block-size="28"
+            activeColor="#B8A9D3"
+            backgroundColor="rgba(184, 169, 211, 0.2)"
+            block-color="#E8C4B8"
+            block-size="26"
             bindchange="onScoreChange"
             bindchanging="onScoreChanging"
           />
@@ -174,21 +188,22 @@
 
     </scroll-view>
 
-    <!-- 底部操作区 -->
-    <view class="drawer-footer">
-      <view class="footer-glow"></view>
-      <button class="save-button {{canSave ? 'enabled' : ''}}"
-              bindtap="onSave"
-              disabled="{{!canSave}}"
-              hover-class="button-hover">
-        <view class="button-shimmer"></view>
-        <view class="button-content">
-          <text class="button-icon">✦</text>
-          <text class="button-text">保存记录</text>
-        </view>
-        <view class="button-pulse" wx:if="{{canSave}}"></view>
-      </button>
-    </view>
+  </view>
 
+  <!-- 底部操作区 -->
+  <view class="drawer-footer {{isOpen ? 'is-open' : ''}}"
+        catchtap="onDrawerTap">
+    <view class="footer-glow"></view>
+    <button class="save-button {{canSave ? 'enabled' : ''}}"
+            bindtap="onSave"
+            disabled="{{!canSave}}"
+            hover-class="button-hover">
+      <view class="button-shimmer"></view>
+      <view class="button-content">
+        <text class="button-icon">✦</text>
+        <text class="button-text">保存记录</text>
+      </view>
+      <view class="button-pulse" wx:if="{{canSave}}"></view>
+    </button>
   </view>
 </view>
