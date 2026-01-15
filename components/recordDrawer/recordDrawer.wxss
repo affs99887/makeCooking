@@ -737,7 +737,6 @@
     rgba(250, 248, 245, 0.9) 30%,
     rgba(250, 248, 245, 0.98) 100%
   );
-  border-top: 1rpx solid rgba(184, 169, 211, 0.18);
   box-sizing: border-box;
   z-index: 10000;
   opacity: 0;
