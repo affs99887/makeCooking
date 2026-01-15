@@ -179,8 +179,8 @@ page {
 
 /* 添加记录按钮 */
 .add-button {
-  background: linear-gradient(135deg, #b8a9d3 0%, #e8c4b8 100%);
-  border: none;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1rpx solid rgba(184, 169, 211, 0.35);
   border-radius: 60rpx;
   padding: 0;
   width: 440rpx;
@@ -189,9 +189,9 @@ page {
   align-items: center;
   justify-content: center;
   box-shadow:
-    0 12rpx 32rpx rgba(184, 169, 211, 0.28),
-    0 6rpx 18rpx rgba(232, 196, 184, 0.2),
-    inset 0 1rpx 2rpx rgba(255, 255, 255, 0.25);
+    0 14rpx 36rpx rgba(139, 123, 168, 0.16),
+    0 6rpx 18rpx rgba(232, 196, 184, 0.16),
+    inset 0 1rpx 3rpx rgba(255, 255, 255, 0.75);
   transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
   position: relative;
   overflow: hidden;
@@ -205,7 +205,11 @@ page {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.08) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.7) 0%,
+    rgba(255, 255, 255, 0) 55%
+  );
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -216,10 +220,12 @@ page {
 
 .add-button-hover {
   transform: translateY(-6rpx) scale(1.02);
+  background: rgba(255, 255, 255, 0.86);
+  border-color: rgba(184, 169, 211, 0.5);
   box-shadow:
-    0 18rpx 48rpx rgba(184, 169, 211, 0.3),
-    0 10rpx 24rpx rgba(232, 196, 184, 0.25),
-    inset 0 1rpx 3rpx rgba(255, 255, 255, 0.2);
+    0 18rpx 48rpx rgba(139, 123, 168, 0.22),
+    0 10rpx 24rpx rgba(232, 196, 184, 0.22),
+    inset 0 1rpx 3rpx rgba(255, 255, 255, 0.45);
 }
 
 .add-button-hover::before {
@@ -237,21 +243,21 @@ page {
 /* 按钮图标 */
 .button-icon {
   font-size: 36rpx;
-  color: #2d2a32;
+  color: #6b5f7a;
   line-height: 1;
-  animation: gentleSparkle 4s ease-in-out infinite;
-  filter: drop-shadow(0 2rpx 6rpx rgba(184, 169, 211, 0.3));
+  animation: gentleSparkle 4.6s ease-in-out infinite;
+  filter: drop-shadow(0 2rpx 6rpx rgba(139, 123, 168, 0.25));
   will-change: transform, opacity;
 }
 
 @keyframes gentleSparkle {
   0%, 100% {
-    opacity: 0.7;
-    transform: rotate(0deg) scale(1);
+    opacity: 0.75;
+    transform: scale(1);
   }
   50% {
     opacity: 1;
-    transform: rotate(180deg) scale(1.1);
+    transform: scale(1.06);
   }
 }
 
