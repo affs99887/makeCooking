@@ -35,13 +35,7 @@
     </view>
 
     <!-- 滚动内容区 -->
-    <view class="content-shell">
-      <scroll-view class="drawer-content"
-                   scroll-y
-                   show-scrollbar="false"
-                   bindscroll="onContentScroll"
-                   style="padding-bottom: calc(180rpx + env(safe-area-inset-bottom) + {{drawerTranslate}}px);">
-        <view class="drawer-content-inner">
+    <scroll-view class="drawer-content" scroll-y>
 
       <!-- 烹饪风格选择 -->
       <view class="section-block type-section">
@@ -219,17 +213,10 @@
         </view>
       </view>
 
-        <!-- 底部间距 -->
-        <view class="section-spacer"></view>
-      </view>
-      </scroll-view>
+      <!-- 底部间距 -->
+      <view class="section-spacer"></view>
 
-      <view class="drawer-scrollbar {{showScrollbar ? 'is-visible' : ''}} {{isScrolling ? 'is-scrolling' : ''}}">
-        <view class="scrollbar-track"></view>
-        <view class="scrollbar-thumb"
-              style="height: {{scrollThumbHeight}}px; transform: translateY({{scrollThumbTop}}px);"></view>
-      </view>
-    </view>
+    </scroll-view>
 
   </view>
 

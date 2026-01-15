@@ -291,60 +291,6 @@
   box-sizing: border-box;
 }
 
-.content-shell {
-  position: relative;
-  flex: 1;
-  display: flex;
-  min-height: 0;
-}
-
-.drawer-scrollbar {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  right: 10rpx;
-  width: 10rpx;
-  padding: 10rpx 0;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-  z-index: 5;
-}
-
-.drawer-scrollbar.is-visible {
-  opacity: 0.35;
-}
-
-.drawer-scrollbar.is-visible.is-scrolling {
-  opacity: 0.8;
-}
-
-.scrollbar-track {
-  position: absolute;
-  top: 10rpx;
-  bottom: 10rpx;
-  left: 50%;
-  width: 4rpx;
-  transform: translateX(-50%);
-  border-radius: 999rpx;
-  background: rgba(184, 169, 211, 0.15);
-}
-
-.scrollbar-thumb {
-  position: absolute;
-  left: 50%;
-  width: 6rpx;
-  transform: translateX(-50%);
-  border-radius: 999rpx;
-  background: linear-gradient(
-    180deg,
-    rgba(184, 169, 211, 0.9) 0%,
-    rgba(232, 196, 184, 0.85) 100%
-  );
-  box-shadow: 0 4rpx 10rpx rgba(139, 123, 168, 0.25);
-  transition: height 0.2s ease;
-}
-
 
 /* ========== 区块样式 ========== */
 .section-block {
