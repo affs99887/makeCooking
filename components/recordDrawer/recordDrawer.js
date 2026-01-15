@@ -28,10 +28,17 @@ Component({
     drawerTranslate: 0,
     windowHeight: 0,
     safeAreaTop: 0,
+    scrollThumbHeight: 0,
+    scrollThumbTop: 0,
+    scrollAreaHeight: 0,
+    scrollContentHeight: 0,
+    showScrollbar: false,
+    isScrolling: false,
     typeCounts: Object.assign({}, BASE_TYPE_COUNTS), // 叠加次数
     selectedMethod: '',     // 选中的烹饪手法
     showMethod: false,      // 是否显示手法选择
     currentScore: 0,         // 当前评分
+    scoreAnimClass: '',      // 分数动画类
     canSave: false           // 是否可以保存
   },
 
@@ -43,6 +50,8 @@ Component({
 
     detached() {
       this.clearOpenSettleTimer()
+      this.clearScrollTimer()
+      this.clearMetricsTimer()
       console.log('[RecordDrawer] Component detached')
     }
   },
@@ -111,12 +120,100 @@ Component({
       }
     },
 
+    clearScrollTimer() {
+      if (this.scrollHideTimer) {
+        clearTimeout(this.scrollHideTimer)
+        this.scrollHideTimer = null
+      }
+    },
+
+    updateScrollMetrics() {
+      if (!this.properties.visible) {
+        return
+      }
+      this.clearMetricsTimer()
+      this.metricsTimer = setTimeout(() => {
+        this.measureScrollMetrics()
+      }, 20)
+    },
+
+    clearMetricsTimer() {
+      if (this.metricsTimer) {
+        clearTimeout(this.metricsTimer)
+        this.metricsTimer = null
+      }
+    },
+
+    measureScrollMetrics() {
+      const query = this.createSelectorQuery()
+      query.select('.drawer-content').boundingClientRect()
+      query.select('.drawer-content-inner').boundingClientRect()
+      query.exec(res => {
+        if (!res || !res[0] || !res[1]) {
+          return
+        }
+        const viewHeight = res[0].height || 0
+        const contentHeight = res[1].height || 0
+        const showScrollbar = contentHeight > viewHeight + 4
+        const thumbHeight = this.getThumbHeight(viewHeight, contentHeight)
+        const maxThumbTop = Math.max(viewHeight - thumbHeight, 0)
+        this.setData({
+          scrollAreaHeight: viewHeight,
+          scrollContentHeight: contentHeight,
+          showScrollbar,
+          scrollThumbHeight: thumbHeight,
+          scrollThumbTop: Math.min(this.data.scrollThumbTop, maxThumbTop)
+        })
+      })
+    },
+
+    getThumbHeight(viewHeight, contentHeight) {
+      if (!viewHeight || !contentHeight) {
+        return 0
+      }
+      const minThumb = 24
+      const ratio = viewHeight / contentHeight
+      const thumbHeight = Math.round(viewHeight * ratio)
+      return Math.max(thumbHeight, minThumb)
+    },
+
+    onContentScroll(e) {
+      const scrollTop = e.detail.scrollTop || 0
+      const viewHeight = this.data.scrollAreaHeight
+      const contentHeight = e.detail.scrollHeight || this.data.scrollContentHeight
+
+      if (!viewHeight || !contentHeight) {
+        return
+      }
+
+      const maxScrollTop = Math.max(contentHeight - viewHeight, 1)
+      const thumbHeight = this.getThumbHeight(viewHeight, contentHeight)
+      const maxThumbTop = Math.max(viewHeight - thumbHeight, 0)
+      const thumbTop = Math.min(
+        Math.max((scrollTop / maxScrollTop) * maxThumbTop, 0),
+        maxThumbTop
+      )
+
+      this.clearScrollTimer()
+      this.setData({
+        scrollThumbHeight: thumbHeight,
+        scrollThumbTop: thumbTop,
+        showScrollbar: contentHeight > viewHeight + 4,
+        isScrolling: true
+      })
+
+      this.scrollHideTimer = setTimeout(() => {
+        this.setData({ isScrolling: false })
+      }, 900)
+    },
+
     /**
      * 监听visible变化
      */
     onVisibleChange(newVal, oldVal) {
       this.initDrawerMetrics()
       this.clearOpenSettleTimer()
+      this.clearScrollTimer()
       const positions = this.getDrawerPositions()
       if (newVal) {
         this.setData({
@@ -136,9 +233,11 @@ Component({
               isOpen: true,
               drawerTranslate: liftTarget
             })
+            this.updateScrollMetrics()
             this.openSettleTimer = setTimeout(() => {
               if (!this.data.isDragging && this.properties.visible) {
                 this.setData({ drawerTranslate: positions.default })
+                this.updateScrollMetrics()
               }
             }, 220)
           }, 40)
@@ -154,7 +253,7 @@ Component({
         })
         // 延迟移除，等待动画完成
         setTimeout(() => {
-          this.setData({ isAnimating: false })
+          this.setData({ isAnimating: false, isScrolling: false })
         }, 800)
       }
     },
@@ -238,6 +337,9 @@ Component({
         isExpanded,
         drawerTranslate: target
       })
+      wx.nextTick(() => {
+        this.updateScrollMetrics()
+      })
     },
 
     /**
@@ -278,6 +380,10 @@ Component({
         typeCounts,
         showMethod,
         selectedMethod
+      }, () => {
+        wx.nextTick(() => {
+          this.updateScrollMetrics()
+        })
       })
 
       this.checkCanSave()
@@ -313,6 +419,10 @@ Component({
         typeCounts,
         showMethod,
         selectedMethod
+      }, () => {
+        wx.nextTick(() => {
+          this.updateScrollMetrics()
+        })
       })
 
       this.checkCanSave()
@@ -337,10 +447,22 @@ Component({
     /**
      * 评分滑块变化中
      */
+    triggerScoreAnimation() {
+      const now = Date.now()
+      if (this.lastScoreAnimAt && now - this.lastScoreAnimAt < 90) {
+        return
+      }
+      this.lastScoreAnimAt = now
+      this.scoreAnimToggle = !this.scoreAnimToggle
+      const scoreAnimClass = this.scoreAnimToggle ? 'score-pop-a' : 'score-pop-b'
+      this.setData({ scoreAnimClass })
+    },
+
     onScoreChanging(e) {
       this.setData({
         currentScore: e.detail.value
       })
+      this.triggerScoreAnimation()
     },
 
     /**
@@ -356,6 +478,7 @@ Component({
         currentScore: score
       })
 
+      this.triggerScoreAnimation()
       this.checkCanSave()
     },
 

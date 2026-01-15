@@ -35,7 +35,13 @@
     </view>
 
     <!-- 滚动内容区 -->
-    <scroll-view class="drawer-content" scroll-y>
+    <view class="content-shell">
+      <scroll-view class="drawer-content"
+                   scroll-y
+                   show-scrollbar="false"
+                   bindscroll="onContentScroll"
+                   style="padding-bottom: calc(180rpx + env(safe-area-inset-bottom) + {{drawerTranslate}}px);">
+        <view class="drawer-content-inner">
 
       <!-- 烹饪风格选择 -->
       <view class="section-block type-section">
@@ -180,26 +186,28 @@
         </view>
 
         <view class="score-display">
-          <text class="score-value">{{currentScore}}</text>
+          <text class="score-value {{scoreAnimClass}}">{{currentScore}}</text>
           <text class="score-unit">分</text>
           <text class="score-max">/ 4100</text>
         </view>
 
         <view class="slider-container">
+          <view class="slider-rail"></view>
+          <view class="slider-fill" style="width: calc((100% - 32rpx) * {{currentScore / 4100}});"></view>
+          <view class="slider-glow" style="width: calc((100% - 32rpx) * {{currentScore / 4100}});"></view>
           <slider
             class="score-slider"
             min="0"
             max="4100"
             step="100"
             value="{{currentScore}}"
-            activeColor="#B8A9D3"
-            backgroundColor="rgba(184, 169, 211, 0.2)"
-            block-color="#E8C4B8"
-            block-size="26"
+            activeColor="rgba(0, 0, 0, 0)"
+            backgroundColor="rgba(0, 0, 0, 0)"
+            block-color="#ffffff"
+            block-size="32"
             bindchange="onScoreChange"
             bindchanging="onScoreChanging"
           />
-          <view class="slider-track-glow" style="width: {{currentScore / 4100 * 100}}%"></view>
         </view>
 
         <view class="score-markers">
@@ -211,10 +219,17 @@
         </view>
       </view>
 
-      <!-- 底部间距 -->
-      <view class="section-spacer"></view>
+        <!-- 底部间距 -->
+        <view class="section-spacer"></view>
+      </view>
+      </scroll-view>
 
-    </scroll-view>
+      <view class="drawer-scrollbar {{showScrollbar ? 'is-visible' : ''}} {{isScrolling ? 'is-scrolling' : ''}}">
+        <view class="scrollbar-track"></view>
+        <view class="scrollbar-thumb"
+              style="height: {{scrollThumbHeight}}px; transform: translateY({{scrollThumbTop}}px);"></view>
+      </view>
+    </view>
 
   </view>
 
