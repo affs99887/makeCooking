@@ -1,4 +1,12 @@
 // components/recordDrawer/recordDrawer.js
+const BASE_TYPE_COUNTS = {
+  standard: 0,
+  service: 0,
+  backin: 0,
+  lite: 0,
+  reverse: 0
+}
+
 Component({
   options: {
     styleIsolation: 'isolated'
@@ -20,9 +28,9 @@ Component({
     drawerTranslate: 0,
     windowHeight: 0,
     safeAreaTop: 0,
-    selectedTypes: [],       // 选中的烹饪风格
-    selectedPosition: '',    // 选中的烹饪手法
-    showPosition: false,     // 是否显示手法选择
+    typeCounts: Object.assign({}, BASE_TYPE_COUNTS), // 叠加次数
+    selectedMethod: '',     // 选中的烹饪手法
+    showMethod: false,      // 是否显示手法选择
     currentScore: 0,         // 当前评分
     canSave: false           // 是否可以保存
   },
@@ -245,32 +253,27 @@ Component({
      */
     onTypeToggle(e) {
       const type = e.currentTarget.dataset.type
-      let { selectedTypes } = this.data
+      const typeCounts = Object.assign({}, this.data.typeCounts)
+
+      if (!Object.prototype.hasOwnProperty.call(typeCounts, type)) {
+        return
+      }
 
       // 触觉反馈
       wx.vibrateShort({ type: 'light' })
 
-      if (selectedTypes.includes(type)) {
-        // 取消选择
-        selectedTypes = selectedTypes.filter(t => t !== type)
-      } else {
-        // 添加选择
-        selectedTypes.push(type)
-      }
+      typeCounts[type] += 1
 
-      // 检查是否选择了Inside
-      const showPosition = selectedTypes.includes('Inside')
-
-      // 如果取消了Inside，清空手法选择
-      let { selectedPosition } = this.data
-      if (!showPosition) {
-        selectedPosition = ''
+      const showMethod = typeCounts.service > 0
+      let { selectedMethod } = this.data
+      if (!showMethod) {
+        selectedMethod = ''
       }
 
       this.setData({
-        selectedTypes,
-        showPosition,
-        selectedPosition
+        typeCounts,
+        showMethod,
+        selectedMethod
       })
 
       this.checkCanSave()
@@ -279,14 +282,14 @@ Component({
     /**
      * 选择烹饪手法（单选）
      */
-    onPositionSelect(e) {
-      const position = e.currentTarget.dataset.position
+    onMethodSelect(e) {
+      const method = e.currentTarget.dataset.method
 
       // 触觉反馈
       wx.vibrateShort({ type: 'medium' })
 
       this.setData({
-        selectedPosition: position
+        selectedMethod: method
       })
 
       this.checkCanSave()
@@ -321,18 +324,18 @@ Component({
      * 检查是否可以保存
      */
     checkCanSave() {
-      const { selectedTypes, selectedPosition, currentScore } = this.data
+      const { typeCounts, selectedMethod, currentScore } = this.data
 
       // 至少选择一种风格
-      const hasType = selectedTypes.length > 0
+      const hasType = Object.keys(typeCounts).some(key => typeCounts[key] > 0)
 
-      // 如果选择了Inside，必须选择手法
-      const hasPosition = selectedTypes.includes('Inside') ? selectedPosition !== '' : true
+      // 如果选择了Service，必须选择手法
+      const hasMethod = typeCounts.service > 0 ? selectedMethod !== '' : true
 
       // 评分大于0
       const hasScore = currentScore > 0
 
-      const canSave = hasType && hasPosition && hasScore
+      const canSave = hasType && hasMethod && hasScore
 
       this.setData({ canSave })
     },
@@ -348,9 +351,12 @@ Component({
       // 强烈触觉反馈
       wx.vibrateShort({ type: 'heavy' })
 
+      const typeCounts = Object.assign({}, this.data.typeCounts)
+      const types = Object.keys(typeCounts).filter(key => typeCounts[key] > 0)
       const recordData = {
-        types: this.data.selectedTypes,
-        position: this.data.selectedPosition,
+        types,
+        typeCounts,
+        method: this.data.selectedMethod,
         score: this.data.currentScore,
         timestamp: Date.now(),
         date: this.formatDate(new Date())
@@ -380,9 +386,9 @@ Component({
      */
     resetForm() {
       this.setData({
-        selectedTypes: [],
-        selectedPosition: '',
-        showPosition: false,
+        typeCounts: Object.assign({}, BASE_TYPE_COUNTS),
+        selectedMethod: '',
+        showMethod: false,
         currentScore: 0,
         canSave: false
       })
