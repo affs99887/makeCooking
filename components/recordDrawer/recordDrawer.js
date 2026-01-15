@@ -252,6 +252,10 @@ Component({
      * 切换烹饪风格选择（多选）
      */
     onTypeToggle(e) {
+      if (this.ignoreTypeTap) {
+        this.ignoreTypeTap = false
+        return
+      }
       const type = e.currentTarget.dataset.type
       const typeCounts = Object.assign({}, this.data.typeCounts)
 
@@ -263,6 +267,41 @@ Component({
       wx.vibrateShort({ type: 'light' })
 
       typeCounts[type] += 1
+
+      const showMethod = typeCounts.service > 0
+      let { selectedMethod } = this.data
+      if (!showMethod) {
+        selectedMethod = ''
+      }
+
+      this.setData({
+        typeCounts,
+        showMethod,
+        selectedMethod
+      })
+
+      this.checkCanSave()
+    },
+
+    /**
+     * 减少烹饪风格次数（长按或点击计数）
+     */
+    onTypeDecrease(e) {
+      const type = e.currentTarget.dataset.type
+      const typeCounts = Object.assign({}, this.data.typeCounts)
+
+      if (!Object.prototype.hasOwnProperty.call(typeCounts, type)) {
+        return
+      }
+
+      if (typeCounts[type] <= 0) {
+        return
+      }
+
+      this.ignoreTypeTap = true
+      wx.vibrateShort({ type: 'light' })
+
+      typeCounts[type] -= 1
 
       const showMethod = typeCounts.service > 0
       let { selectedMethod } = this.data

@@ -49,60 +49,80 @@
           <view class="type-grid">
             <view class="type-card type-card-standard {{typeCounts.standard > 0 ? 'active' : ''}}"
                 bindtap="onTypeToggle"
+                catchlongpress="onTypeDecrease"
                 data-type="standard">
+              <view class="type-check"></view>
               <view class="type-card-content">
                 <text class="type-name-cn">标准</text>
                 <text class="type-name-en">Standard</text>
               </view>
-              <view class="type-count" wx:if="{{typeCounts.standard > 1}}">
+              <view class="type-count" wx:if="{{typeCounts.standard > 1}}"
+                    catchtap="onTypeDecrease"
+                    data-type="standard">
                 <text class="type-count-text">x{{typeCounts.standard}}</text>
               </view>
             </view>
 
             <view class="type-card type-card-service {{typeCounts.service > 0 ? 'active' : ''}}"
                 bindtap="onTypeToggle"
+                catchlongpress="onTypeDecrease"
                 data-type="service">
+              <view class="type-check"></view>
               <view class="type-card-content">
                 <text class="type-name-cn">服务</text>
                 <text class="type-name-en">Service</text>
               </view>
-              <view class="type-count" wx:if="{{typeCounts.service > 1}}">
+              <view class="type-count" wx:if="{{typeCounts.service > 1}}"
+                    catchtap="onTypeDecrease"
+                    data-type="service">
                 <text class="type-count-text">x{{typeCounts.service}}</text>
               </view>
             </view>
 
             <view class="type-card type-card-backin {{typeCounts.backin > 0 ? 'active' : ''}}"
                 bindtap="onTypeToggle"
+                catchlongpress="onTypeDecrease"
                 data-type="backin">
+              <view class="type-check"></view>
               <view class="type-card-content">
                 <text class="type-name-cn">回味</text>
                 <text class="type-name-en">Backin</text>
               </view>
-              <view class="type-count" wx:if="{{typeCounts.backin > 1}}">
+              <view class="type-count" wx:if="{{typeCounts.backin > 1}}"
+                    catchtap="onTypeDecrease"
+                    data-type="backin">
                 <text class="type-count-text">x{{typeCounts.backin}}</text>
               </view>
             </view>
 
             <view class="type-card type-card-lite {{typeCounts.lite > 0 ? 'active' : ''}}"
                 bindtap="onTypeToggle"
+                catchlongpress="onTypeDecrease"
                 data-type="lite">
+              <view class="type-check"></view>
               <view class="type-card-content">
                 <text class="type-name-cn">清淡</text>
                 <text class="type-name-en">Lite</text>
               </view>
-              <view class="type-count" wx:if="{{typeCounts.lite > 1}}">
+              <view class="type-count" wx:if="{{typeCounts.lite > 1}}"
+                    catchtap="onTypeDecrease"
+                    data-type="lite">
                 <text class="type-count-text">x{{typeCounts.lite}}</text>
               </view>
             </view>
 
             <view class="type-card type-card-reverse {{typeCounts.reverse > 0 ? 'active' : ''}}"
                 bindtap="onTypeToggle"
+                catchlongpress="onTypeDecrease"
                 data-type="reverse">
+              <view class="type-check"></view>
               <view class="type-card-content">
                 <text class="type-name-cn">反转</text>
                 <text class="type-name-en">Reverse</text>
               </view>
-              <view class="type-count" wx:if="{{typeCounts.reverse > 1}}">
+              <view class="type-count" wx:if="{{typeCounts.reverse > 1}}"
+                    catchtap="onTypeDecrease"
+                    data-type="reverse">
                 <text class="type-count-text">x{{typeCounts.reverse}}</text>
               </view>
             </view>
@@ -122,6 +142,7 @@
           <view class="method-item {{selectedMethod === 'Lollipop' ? 'active' : ''}}"
                 bindtap="onMethodSelect"
                 data-method="Lollipop">
+            <view class="method-check"></view>
             <view class="method-info">
               <text class="method-label-cn">棒棒糖法</text>
               <text class="method-label-en">Lollipop</text>
@@ -131,6 +152,7 @@
           <view class="method-item {{selectedMethod === 'Seafood' ? 'active' : ''}}"
                 bindtap="onMethodSelect"
                 data-method="Seafood">
+            <view class="method-check"></view>
             <view class="method-info">
               <text class="method-label-cn">海鲜法</text>
               <text class="method-label-en">Seafood</text>
@@ -140,6 +162,7 @@
           <view class="method-item {{selectedMethod === 'Both' ? 'active' : ''}}"
                 bindtap="onMethodSelect"
                 data-method="Both">
+            <view class="method-check"></view>
             <view class="method-info">
               <text class="method-label-cn">双拼法</text>
               <text class="method-label-en">Both</text>
