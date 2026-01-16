@@ -214,7 +214,8 @@
       </view>
 
       <!-- 底部间距 -->
-      <view class="section-spacer"></view>
+      <view class="section-spacer"
+            style="height: {{spacerHeight}}rpx;"></view>
 
     </scroll-view>
 

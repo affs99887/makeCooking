@@ -6,6 +6,7 @@ const BASE_TYPE_COUNTS = {
   lite: 0,
   reverse: 0
 }
+const BASE_SPACER_HEIGHT = 160
 
 Component({
   options: {
@@ -28,6 +29,7 @@ Component({
     drawerTranslate: 0,
     windowHeight: 0,
     safeAreaTop: 0,
+    spacerHeight: BASE_SPACER_HEIGHT,
     typeCounts: Object.assign({}, BASE_TYPE_COUNTS), // 叠加次数
     selectedMethod: '',     // 选中的烹饪手法
     showMethod: false,      // 是否显示手法选择
@@ -100,6 +102,30 @@ Component({
       }
     },
 
+    getSpacerMetrics(drawerTranslate, positions) {
+      const metrics = positions || this.getDrawerPositions()
+      const denom = metrics.default - metrics.expanded
+      let progress = 1
+      if (denom > 0) {
+        progress = (drawerTranslate - metrics.expanded) / denom
+      }
+      if (progress < 0) {
+        progress = 0
+      } else if (progress > 1) {
+        progress = 1
+      }
+      return {
+        spacerHeight: Math.round(BASE_SPACER_HEIGHT * progress)
+      }
+    },
+
+    setDrawerTranslate(drawerTranslate, extraData, positions) {
+      const spacerMetrics = this.getSpacerMetrics(drawerTranslate, positions)
+      this.setData(Object.assign({
+        drawerTranslate
+      }, spacerMetrics, extraData || {}))
+    },
+
     clearOpenSettleTimer() {
       if (this.openStartTimer) {
         clearTimeout(this.openStartTimer)
@@ -119,26 +145,22 @@ Component({
       this.clearOpenSettleTimer()
       const positions = this.getDrawerPositions()
       if (newVal) {
-        this.setData({
+        this.setDrawerTranslate(positions.closed, {
           isAnimating: true,
           isOpen: false,
           isDragging: false,
-          isExpanded: false,
-          drawerTranslate: positions.closed
-        })
+          isExpanded: false
+        }, positions)
         wx.nextTick(() => {
           this.openStartTimer = setTimeout(() => {
             const liftTarget = Math.max(
               positions.default - positions.openOvershoot,
               positions.expanded
             )
-            this.setData({
-              isOpen: true,
-              drawerTranslate: liftTarget
-            })
+            this.setDrawerTranslate(liftTarget, { isOpen: true }, positions)
             this.openSettleTimer = setTimeout(() => {
               if (!this.data.isDragging && this.properties.visible) {
-                this.setData({ drawerTranslate: positions.default })
+                this.setDrawerTranslate(positions.default, null, positions)
               }
             }, 220)
           }, 40)
@@ -146,12 +168,11 @@ Component({
         // 触觉反馈
         wx.vibrateShort({ type: 'light' })
       } else {
-        this.setData({
+        this.setDrawerTranslate(positions.closed, {
           isOpen: false,
           isDragging: false,
-          isExpanded: false,
-          drawerTranslate: positions.closed
-        })
+          isExpanded: false
+        }, positions)
         // 延迟移除，等待动画完成
         setTimeout(() => {
           this.setData({ isAnimating: false })
@@ -207,7 +228,7 @@ Component({
           positions.closed + (nextTranslate - positions.closed) * 0.28
       }
 
-      this.setData({ drawerTranslate: nextTranslate })
+      this.setDrawerTranslate(nextTranslate, null, positions)
     },
 
     /**
@@ -233,11 +254,10 @@ Component({
         isExpanded = true
       }
 
-      this.setData({
+      this.setDrawerTranslate(target, {
         isDragging: false,
-        isExpanded,
-        drawerTranslate: target
-      })
+        isExpanded
+      }, positions)
     },
 
     /**

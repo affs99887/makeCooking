@@ -876,7 +876,12 @@
 
 /* ========== 底部操作区 ========== */
 .section-spacer {
-  height: 16rpx;
+  height: 160rpx;
+  transition: height 0.25s ease;
+}
+
+.drawer-container.is-dragging .section-spacer {
+  transition: none;
 }
 
 .drawer-footer {
