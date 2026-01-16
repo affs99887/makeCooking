@@ -394,7 +394,7 @@ Component({
 
       typeCounts[type] -= 1
 
-      const showMethod = typeCounts.service > 0
+      const showMethod = typeCounts.suck > 0
       let { selectedMethod } = this.data
       if (!showMethod) {
         selectedMethod = ''
@@ -469,7 +469,7 @@ Component({
       const hasType = Object.keys(typeCounts).some(key => typeCounts[key] > 0)
 
       // 如果选择了Service，必须选择手法
-      const hasMethod = typeCounts.service > 0 ? selectedMethod !== '' : true
+      const hasMethod = typeCounts.suck > 0 ? selectedMethod !== '' : true
 
       // 评分大于0
       const hasScore = currentScore > 0
@@ -720,7 +720,7 @@ Component({
 
     applyRecord(record) {
       const typeCounts = this.normalizeTypeCounts(record)
-      const showMethod = typeCounts.service > 0
+      const showMethod = typeCounts.suck > 0
       let selectedMethod = record.method || ''
       if (!showMethod) {
         selectedMethod = ''
