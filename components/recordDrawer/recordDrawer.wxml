@@ -2,6 +2,7 @@
 
 <!-- 遮罩层 -->
 <view class="drawer-mask {{visible ? 'show' : ''}}"
+      style="--mask-blur: {{maskBlur}}rpx;"
       bindtap="onMaskTap"
       wx:if="{{isAnimating}}">
 

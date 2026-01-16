@@ -7,6 +7,7 @@ const BASE_TYPE_COUNTS = {
   reverse: 0
 }
 const BASE_SPACER_HEIGHT = 160
+const MAX_MASK_BLUR = 20
 
 Component({
   options: {
@@ -27,6 +28,7 @@ Component({
     isDragging: false,
     isExpanded: false,
     drawerTranslate: 0,
+    maskBlur: 0,
     windowHeight: 0,
     safeAreaTop: 0,
     spacerHeight: BASE_SPACER_HEIGHT,
@@ -119,10 +121,27 @@ Component({
       }
     },
 
+    getMaskBlur(drawerTranslate, positions) {
+      const metrics = positions || this.getDrawerPositions()
+      const denom = metrics.closed - metrics.default
+      let progress = 1
+      if (denom > 0 && drawerTranslate > metrics.default) {
+        progress = 1 - (drawerTranslate - metrics.default) / denom
+      }
+      if (progress < 0) {
+        progress = 0
+      } else if (progress > 1) {
+        progress = 1
+      }
+      return Number((MAX_MASK_BLUR * progress).toFixed(2))
+    },
+
     setDrawerTranslate(drawerTranslate, extraData, positions) {
       const spacerMetrics = this.getSpacerMetrics(drawerTranslate, positions)
+      const maskBlur = this.getMaskBlur(drawerTranslate, positions)
       this.setData(Object.assign({
-        drawerTranslate
+        drawerTranslate,
+        maskBlur
       }, spacerMetrics, extraData || {}))
     },
 
