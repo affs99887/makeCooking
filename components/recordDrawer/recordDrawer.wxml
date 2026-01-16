@@ -127,9 +127,27 @@
                 <text class="type-count-text">x{{typeCounts.reverse}}</text>
               </view>
             </view>
+
+            <view class="type-card type-card-suck {{typeCounts.suck > 0 ? 'active' : ''}}"
+                  bindtap="onTypeToggle"
+                  catchlongpress="onTypeDecrease"
+                  data-type="suck">
+              <view class="type-check"></view>
+              <view class="type-card-content">
+                <text class="type-name-cn">萨克</text>
+                <text class="type-name-en">Suck</text>
+              </view>
+              <view class="type-count" wx:if="{{typeCounts.suck > 1}}"
+                    catchtap="onTypeDecrease"
+                    data-type="suck">
+                <text class="type-count-text">x{{typeCounts.suck}}</text>
+              </view>
+            </view>
           </view>
         </view>
       </view>
+
+
 
       <!-- 烹饪手法选择（仅在选择Service时显示） -->
       <view class="section-block method-section {{showMethod ? 'show' : ''}}" wx:if="{{showMethod}}">

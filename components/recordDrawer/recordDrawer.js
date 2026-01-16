@@ -4,7 +4,8 @@ const BASE_TYPE_COUNTS = {
   service: 0,
   backin: 0,
   lite: 0,
-  reverse: 0
+  reverse: 0,
+  suck: 0
 }
 const BASE_SPACER_HEIGHT = 160
 const MAX_MASK_BLUR = 20
@@ -355,7 +356,7 @@ Component({
 
       typeCounts[type] += 1
 
-      const showMethod = typeCounts.service > 0
+      const showMethod = typeCounts.suck > 0
       let { selectedMethod } = this.data
       if (!showMethod) {
         selectedMethod = ''
