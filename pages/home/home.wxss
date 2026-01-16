@@ -717,3 +717,304 @@ page {
     opacity: 0.45;
   }
 }
+
+/* ========== 统计视图 ========== */
+.stats-panel {
+  position: absolute;
+  inset: 0;
+  padding: 120rpx 60rpx calc(env(safe-area-inset-bottom) + 200rpx);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  animation: statsRise 0.9s cubic-bezier(0.23, 1, 0.32, 1) backwards;
+}
+
+@keyframes statsRise {
+  from {
+    opacity: 0;
+    transform: translateY(30rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stats-header {
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+  margin-bottom: 32rpx;
+}
+
+.stats-title {
+  font-family: 'Georgia', 'Palatino', 'Times New Roman', serif;
+  font-size: 48rpx;
+  font-weight: 400;
+  color: var(--ink);
+  letter-spacing: 3rpx;
+}
+
+.stats-subtitle {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 24rpx;
+  color: var(--ink-soft);
+  letter-spacing: 1.5rpx;
+}
+
+.records-scroll {
+  flex: 1;
+  min-height: 0;
+}
+
+.records-inner {
+  padding-bottom: 40rpx;
+}
+
+.records-state {
+  padding: 80rpx 40rpx;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 28rpx;
+  border: 1rpx solid rgba(184, 169, 211, 0.18);
+  box-shadow: 0 16rpx 40rpx rgba(139, 123, 168, 0.12);
+  margin-bottom: 24rpx;
+}
+
+.records-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 260rpx;
+}
+
+.records-state-title {
+  display: block;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 30rpx;
+  color: var(--ink);
+  letter-spacing: 2rpx;
+}
+
+.records-state-subtitle {
+  display: block;
+  margin-top: 10rpx;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 24rpx;
+  color: var(--ink-muted);
+  letter-spacing: 1rpx;
+}
+
+.records-empty {
+  padding: 90rpx 40rpx;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.62);
+  border-radius: 28rpx;
+  border: 1rpx dashed rgba(184, 169, 211, 0.2);
+  box-shadow: 0 12rpx 36rpx rgba(139, 123, 168, 0.12);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14rpx;
+}
+
+.empty-illustration {
+  position: relative;
+  width: 200rpx;
+  height: 200rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-orb {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    rgba(184, 169, 211, 0.45) 0%,
+    rgba(232, 196, 184, 0.18) 55%,
+    transparent 75%);
+  filter: blur(4rpx);
+  opacity: 0.8;
+}
+
+.empty-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1rpx solid rgba(184, 169, 211, 0.35);
+  animation: emptyPulse 4.2s ease-in-out infinite;
+  opacity: 0.6;
+}
+
+.empty-ring.ring-1 {
+  width: 120rpx;
+  height: 120rpx;
+}
+
+.empty-ring.ring-2 {
+  width: 168rpx;
+  height: 168rpx;
+  animation-delay: 0.9s;
+}
+
+@keyframes emptyPulse {
+  0%, 100% {
+    transform: scale(0.98);
+    opacity: 0.45;
+  }
+  50% {
+    transform: scale(1.04);
+    opacity: 0.8;
+  }
+}
+
+.empty-title {
+  display: block;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 30rpx;
+  color: var(--ink);
+  letter-spacing: 2rpx;
+}
+
+.empty-subtitle {
+  display: block;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 24rpx;
+  color: var(--ink-muted);
+  letter-spacing: 1rpx;
+}
+
+.record-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 30rpx;
+  padding: 28rpx 28rpx 24rpx;
+  margin-bottom: 24rpx;
+  background: rgba(255, 255, 255, 0.74);
+  border: 1rpx solid rgba(184, 169, 211, 0.22);
+  box-shadow:
+    0 18rpx 44rpx rgba(139, 123, 168, 0.16),
+    0 8rpx 20rpx rgba(232, 196, 184, 0.12),
+    inset 0 1rpx 0 rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(24rpx) saturate(150%);
+}
+
+.record-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg,
+    rgba(232, 196, 184, 0.12) 0%,
+    rgba(255, 255, 255, 0.08) 55%,
+    rgba(184, 169, 211, 0.12) 100%);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.record-card-glow {
+  position: absolute;
+  top: -60rpx;
+  right: -40rpx;
+  width: 180rpx;
+  height: 180rpx;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    rgba(184, 169, 211, 0.35) 0%,
+    rgba(232, 196, 184, 0.1) 55%,
+    transparent 70%);
+  filter: blur(26rpx);
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+.record-card-content {
+  position: relative;
+  z-index: 1;
+}
+
+.record-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18rpx;
+}
+
+.record-date {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 30rpx;
+  color: var(--ink);
+  letter-spacing: 1.5rpx;
+}
+
+.record-score {
+  display: flex;
+  align-items: baseline;
+  gap: 8rpx;
+  padding: 6rpx 16rpx;
+  border-radius: 20rpx;
+  background: rgba(184, 169, 211, 0.18);
+  border: 1rpx solid rgba(184, 169, 211, 0.28);
+}
+
+.score-label {
+  font-size: 20rpx;
+  color: var(--ink-muted);
+  letter-spacing: 1rpx;
+}
+
+.score-value {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 30rpx;
+  color: var(--lavender-deep);
+}
+
+.record-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-bottom: 16rpx;
+}
+
+.record-tag {
+  display: flex;
+  align-items: center;
+  padding: 6rpx 16rpx;
+  border-radius: 18rpx;
+  background: rgba(232, 196, 184, 0.14);
+  border: 1rpx solid rgba(184, 169, 211, 0.22);
+  box-shadow: inset 0 1rpx 0 rgba(255, 255, 255, 0.6);
+}
+
+.tag-name {
+  font-size: 22rpx;
+  color: var(--ink);
+  letter-spacing: 1rpx;
+}
+
+.tag-count {
+  margin-left: 6rpx;
+  font-size: 20rpx;
+  color: var(--ink-soft);
+}
+
+.record-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12rpx;
+  border-top: 1rpx dashed rgba(184, 169, 211, 0.2);
+}
+
+.meta-label {
+  font-size: 22rpx;
+  color: var(--ink-muted);
+  letter-spacing: 1rpx;
+}
+
+.meta-value {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 24rpx;
+  color: var(--ink);
+}

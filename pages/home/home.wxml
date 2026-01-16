@@ -8,7 +8,7 @@
 
 <!-- 主内容（等待 splash 完成后显示） -->
 <view class="page" wx:if="{{!showSplash}}">
-  <view class="content">
+  <view class="content" wx:if="{{activeTab === 'today'}}">
     <!-- 日期显示 -->
     <view class="date-display">{{currentDate}}</view>
 
@@ -30,6 +30,59 @@
 
     <!-- 底部装饰线 -->
     <view class="decorative-line"></view>
+  </view>
+
+  <view class="stats-panel" wx:if="{{activeTab === 'stats'}}">
+    <view class="stats-header">
+      <text class="stats-title">历史记录</text>
+      <text class="stats-subtitle">把每一次味道收进记忆</text>
+    </view>
+
+    <scroll-view class="records-scroll" scroll-y>
+      <view class="records-inner">
+        <view class="records-state records-loading" wx:if="{{recordsLoading}}">
+          <text class="records-state-title">正在整理你的记录</text>
+          <text class="records-state-subtitle">请稍候片刻</text>
+        </view>
+
+        <view class="records-empty" wx:if="{{!recordsLoading && records.length === 0}}">
+          <view class="empty-illustration">
+            <view class="empty-orb"></view>
+            <view class="empty-ring ring-1"></view>
+            <view class="empty-ring ring-2"></view>
+          </view>
+          <text class="empty-title">还没有记录</text>
+          <text class="empty-subtitle">从今天开始写下味道</text>
+        </view>
+
+        <block wx:for="{{records}}" wx:key="recordId" wx:for-item="record">
+          <view class="record-card">
+            <view class="record-card-glow"></view>
+            <view class="record-card-content">
+              <view class="record-header">
+                <text class="record-date">{{record.displayDate}}</text>
+                <view class="record-score">
+                  <text class="score-label">评分</text>
+                  <text class="score-value">{{record.score}}</text>
+                </view>
+              </view>
+
+              <view class="record-tags" wx:if="{{record.tags.length}}">
+                <view class="record-tag" wx:for="{{record.tags}}" wx:key="key" wx:for-item="tag">
+                  <text class="tag-name">{{tag.label}}</text>
+                  <text class="tag-count" wx:if="{{tag.count > 1}}">x{{tag.count}}</text>
+                </view>
+              </view>
+
+              <view class="record-meta">
+                <text class="meta-label">手法</text>
+                <text class="meta-value">{{record.methodLabel}}</text>
+              </view>
+            </view>
+          </view>
+        </block>
+      </view>
+    </scroll-view>
   </view>
 
   <!-- 流动墨水概念 - 底部Tab栏 -->
