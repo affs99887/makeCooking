@@ -215,6 +215,53 @@
         </view>
       </view>
 
+      <!-- 时间选择 -->
+      <view class="section-block datetime-section">
+        <view class="section-header">
+          <view class="section-icon"></view>
+          <text class="section-title">时间</text>
+          <text class="section-hint">年月日时分</text>
+        </view>
+
+        <view class="datetime-summary">
+          <view class="datetime-text">
+            <text class="datetime-main">{{useNowLabel && !showDateEditor ? labelDate : displayDate}}</text>
+            <text class="datetime-sub">{{useNowLabel && !showDateEditor ? labelTime : displayTime}}</text>
+          </view>
+          <button class="datetime-edit-button"
+                  wx:if="{{!isReadonly}}"
+                  bindtap="onToggleDateEditor"
+                  hover-class="datetime-edit-hover">
+            {{showDateEditor ? '完成' : '修改时间'}}
+          </button>
+        </view>
+
+        <view class="datetime-editor {{showDateEditor ? 'show' : ''}}" wx:if="{{showDateEditor}}">
+          <view class="datetime-row">
+            <picker class="datetime-picker"
+                    mode="date"
+                    value="{{selectedDate}}"
+                    bindchange="onDateChange"
+                    disabled="{{isReadonly}}">
+              <view class="datetime-card">
+                <text class="datetime-label">日期</text>
+                <text class="datetime-value">{{displayDate}}</text>
+              </view>
+            </picker>
+            <picker class="datetime-picker"
+                    mode="time"
+                    value="{{selectedTime}}"
+                    bindchange="onTimeChange"
+                    disabled="{{isReadonly}}">
+              <view class="datetime-card">
+                <text class="datetime-label">时间</text>
+                <text class="datetime-value">{{displayTime}}</text>
+              </view>
+            </picker>
+          </view>
+        </view>
+      </view>
+
       <!-- 底部间距 -->
       <view class="section-spacer"
             style="height: {{spacerHeight}}rpx;"></view>

@@ -242,6 +242,7 @@ Page({
       score: recordData.score || 0,
       timestamp: recordData.timestamp,
       date: recordData.date,
+      time: recordData.time || '',
       updatedAt: db.serverDate()
     }
 

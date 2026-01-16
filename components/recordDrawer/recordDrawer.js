@@ -8,6 +8,8 @@ const BASE_TYPE_COUNTS = {
 }
 const BASE_SPACER_HEIGHT = 160
 const MAX_MASK_BLUR = 20
+const DEFAULT_DATE_LABEL = '刚刚烹饪完毕'
+const DEFAULT_TIME_LABEL = '此刻'
 const MODE_CONFIG = {
   create: {
     title: '今日烹饪记录',
@@ -59,6 +61,14 @@ Component({
     drawerTitle: MODE_CONFIG.create.title,
     drawerSubtitle: MODE_CONFIG.create.subtitle,
     currentRecordId: '',
+    labelDate: DEFAULT_DATE_LABEL,
+    labelTime: DEFAULT_TIME_LABEL,
+    selectedDate: '',
+    selectedTime: '',
+    displayDate: '',
+    displayTime: '',
+    useNowLabel: false,
+    showDateEditor: false,
     drawerTranslate: 0,
     maskBlur: 0,
     windowHeight: 0,
@@ -73,7 +83,6 @@ Component({
 
   lifetimes: {
     attached() {
-      this.currentRecordMeta = {}
       this.onModeChange(this.properties.mode)
       this.onRecordChange(this.properties.record)
       this.initDrawerMetrics()
@@ -507,15 +516,17 @@ Component({
      * 重置表单
      */
     resetForm() {
-      this.setData({
+      const dateState = this.getDateTimeState(new Date())
+      this.setData(Object.assign({}, dateState, {
         typeCounts: Object.assign({}, BASE_TYPE_COUNTS),
         selectedMethod: '',
         showMethod: false,
         currentScore: 0,
         canSave: false,
-        currentRecordId: ''
-      })
-      this.currentRecordMeta = {}
+        currentRecordId: '',
+        useNowLabel: true,
+        showDateEditor: false
+      }))
     },
 
     /**
@@ -526,6 +537,148 @@ Component({
       const month = String(date.getMonth() + 1).padStart(2, '0')
       const day = String(date.getDate()).padStart(2, '0')
       return `${year}.${month}.${day}`
+    },
+
+    formatPickerDate(date) {
+      const year = date.getFullYear()
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const day = String(date.getDate()).padStart(2, '0')
+      return `${year}-${month}-${day}`
+    },
+
+    formatTime(date) {
+      const hour = String(date.getHours()).padStart(2, '0')
+      const minute = String(date.getMinutes()).padStart(2, '0')
+      return `${hour}:${minute}`
+    },
+
+    formatDisplayDate(pickerDate) {
+      if (!pickerDate) {
+        return ''
+      }
+      const parts = String(pickerDate).split('-')
+      if (parts.length < 3) {
+        return pickerDate
+      }
+      return `${parts[0]}.${parts[1]}.${parts[2]}`
+    },
+
+    getDateTimeState(date) {
+      const baseDate = date instanceof Date && !Number.isNaN(date.getTime())
+        ? date
+        : new Date()
+      return {
+        selectedDate: this.formatPickerDate(baseDate),
+        selectedTime: this.formatTime(baseDate),
+        displayDate: this.formatDate(baseDate),
+        displayTime: this.formatTime(baseDate),
+        useNowLabel: false
+      }
+    },
+
+    parseDateParts(dateStr) {
+      if (!dateStr) {
+        return null
+      }
+      const normalized = String(dateStr).replace(/\./g, '-')
+      const parts = normalized.split('-')
+      if (parts.length < 3) {
+        return null
+      }
+      const year = Number(parts[0])
+      const month = Number(parts[1])
+      const day = Number(parts[2])
+      if (!year || !month || !day) {
+        return null
+      }
+      return { year, month, day }
+    },
+
+    parseTimeParts(timeStr) {
+      if (!timeStr) {
+        return null
+      }
+      const parts = String(timeStr).split(':')
+      if (parts.length < 2) {
+        return null
+      }
+      const hour = Number(parts[0])
+      const minute = Number(parts[1])
+      if (Number.isNaN(hour) || Number.isNaN(minute)) {
+        return null
+      }
+      return { hour, minute }
+    },
+
+    createDateFromPicker(dateStr, timeStr) {
+      const dateParts = this.parseDateParts(dateStr)
+      if (!dateParts) {
+        return null
+      }
+      const timeParts = this.parseTimeParts(timeStr) || { hour: 0, minute: 0 }
+      const date = new Date(
+        dateParts.year,
+        dateParts.month - 1,
+        dateParts.day,
+        timeParts.hour,
+        timeParts.minute
+      )
+      if (Number.isNaN(date.getTime())) {
+        return null
+      }
+      return date
+    },
+
+    resolveRecordDate(record) {
+      if (record && record.timestamp) {
+        const timestampDate = new Date(record.timestamp)
+        if (!Number.isNaN(timestampDate.getTime())) {
+          return timestampDate
+        }
+      }
+      const dateStr = record ? record.date : ''
+      const timeStr = record ? record.time : ''
+      const date = this.createDateFromPicker(dateStr, timeStr)
+      return date || new Date()
+    },
+
+    onDateChange(e) {
+      if (this.data.isReadonly) {
+        return
+      }
+      const selectedDate = e.detail.value
+      this.setData({
+        selectedDate,
+        displayDate: this.formatDisplayDate(selectedDate),
+        useNowLabel: false
+      })
+    },
+
+    onTimeChange(e) {
+      if (this.data.isReadonly) {
+        return
+      }
+      const selectedTime = e.detail.value
+      this.setData({
+        selectedTime,
+        displayTime: selectedTime,
+        displayDate: this.formatDisplayDate(this.data.selectedDate),
+        useNowLabel: false
+      })
+    },
+
+    onToggleDateEditor() {
+      if (this.data.isReadonly) {
+        return
+      }
+      const nextShow = !this.data.showDateEditor
+      const nextData = { showDateEditor: nextShow }
+      if (nextShow) {
+        nextData.useNowLabel = false
+        nextData.displayDate = this.formatDisplayDate(this.data.selectedDate)
+        nextData.displayTime = this.data.selectedTime
+      }
+      this.setData(nextData)
     },
 
     onModeChange(newVal) {
@@ -559,7 +712,8 @@ Component({
         currentMode: mode,
         isReadonly: config.readonly,
         drawerTitle: config.title,
-        drawerSubtitle: config.subtitle
+        drawerSubtitle: config.subtitle,
+        showDateEditor: false
       })
     },
 
@@ -572,18 +726,16 @@ Component({
       }
       const score = Number(record.score || 0)
       const recordId = record._id || record.id || ''
-      this.currentRecordMeta = {
-        timestamp: record.timestamp,
-        date: record.date
-      }
+      const dateState = this.getDateTimeState(this.resolveRecordDate(record))
 
-      this.setData({
+      this.setData(Object.assign({
         typeCounts,
         showMethod,
         selectedMethod,
         currentScore: score,
-        currentRecordId: recordId
-      })
+        currentRecordId: recordId,
+        showDateEditor: false
+      }, dateState))
 
       this.checkCanSave()
     },
@@ -605,16 +757,19 @@ Component({
     buildRecordData(includeId) {
       const typeCounts = Object.assign({}, this.data.typeCounts)
       const types = Object.keys(typeCounts).filter(key => typeCounts[key] > 0)
-      const meta = this.currentRecordMeta || {}
-      const timestamp = meta.timestamp || Date.now()
-      const date = meta.date || this.formatDate(new Date())
+      const dateValue = this.createDateFromPicker(this.data.selectedDate, this.data.selectedTime)
+      const baseDate = dateValue || new Date()
+      const timestamp = baseDate.getTime()
+      const date = this.formatDate(baseDate)
+      const time = this.data.selectedTime || this.formatTime(baseDate)
       const recordData = {
         types,
         typeCounts,
         method: this.data.selectedMethod,
         score: this.data.currentScore,
         timestamp,
-        date
+        date,
+        time
       }
       if (includeId) {
         recordData._id = this.data.currentRecordId

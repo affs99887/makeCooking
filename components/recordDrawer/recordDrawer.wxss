@@ -320,6 +320,10 @@
   animation-delay: 0.45s;
 }
 
+.section-block:nth-child(4) {
+  animation-delay: 0.55s;
+}
+
 @keyframes section-reveal {
   from {
     opacity: 0;
@@ -703,6 +707,106 @@
   font-weight: 300;
   color: var(--ink-muted);
   letter-spacing: 1rpx;
+}
+
+/* ========== 时间选择 ========== */
+.datetime-summary {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 16rpx;
+  width: 100%;
+}
+
+.datetime-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+  flex: 1;
+  min-width: 0;
+  margin-left: 20rpx;
+}
+
+.datetime-main {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 28rpx;
+  color: var(--ink);
+  letter-spacing: 1.5rpx;
+}
+
+.datetime-sub {
+  font-size: 20rpx;
+  color: var(--ink-muted);
+  letter-spacing: 1rpx;
+}
+
+.datetime-edit-button {
+  margin-left: auto;
+  padding: 8rpx 18rpx;
+  border-radius: 999rpx;
+  border: 1rpx solid rgba(184, 169, 211, 0.3);
+  background: rgba(255, 255, 255, 0.8);
+  font-size: 28rpx;
+  color: var(--lavender-deep);
+  letter-spacing: 1rpx;
+  line-height: 1.6;
+}
+
+.datetime-edit-button.datetime-edit-hover {
+  transform: translateY(-2rpx);
+}
+
+.datetime-editor {
+  margin-top: 18rpx;
+  animation: datetimeFade 0.3s ease forwards;
+}
+
+@keyframes datetimeFade {
+  from {
+    opacity: 0;
+    transform: translateY(10rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.datetime-row {
+  display: flex;
+  gap: 14rpx;
+}
+
+.datetime-picker {
+  flex: 1;
+}
+
+.datetime-card {
+  padding: 18rpx 20rpx;
+  border-radius: 22rpx;
+  background: linear-gradient(160deg, #ffffff 0%, rgba(184, 169, 211, 0.08) 100%);
+  border: 1rpx solid rgba(184, 169, 211, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+  box-sizing: border-box;
+}
+
+.datetime-label {
+  font-size: 20rpx;
+  color: var(--ink-muted);
+  letter-spacing: 1rpx;
+}
+
+.datetime-value {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 28rpx;
+  color: var(--ink);
+  letter-spacing: 1rpx;
+}
+
+.drawer-container.is-readonly .datetime-card {
+  opacity: 0.75;
 }
 
 
