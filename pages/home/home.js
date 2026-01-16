@@ -16,14 +16,17 @@ Page({
     subtitle: '',
     activeTab: 'today',
     showDrawer: false,      // 新增：控制抽屉显示
+    drawerMode: 'create',
+    selectedRecord: null,
     records: [],
-    recordsLoading: false,
-    recordsLoaded: false
+    recordsStatus: 'idle',
+    recordsRefreshing: false
   },
 
   onLoad() {
     // 不立即加载，等待 splash 完成
     console.log('[Home] Page loaded, waiting for splash')
+    this.recordsFetching = false
   },
 
   onShow() {
@@ -32,7 +35,8 @@ Page({
       this.updateGreeting()
     }
     if (this.data.activeTab === 'stats') {
-      this.loadRecords()
+      this.setData({ recordsStatus: 'loading' })
+      this.loadRecords(true, false)
     }
   },
 
@@ -99,7 +103,9 @@ Page({
   onAddRecord() {
     console.log('[Home] Opening record drawer')
     this.setData({
-      showDrawer: true
+      showDrawer: true,
+      drawerMode: 'create',
+      selectedRecord: null
     })
   },
 
@@ -109,7 +115,9 @@ Page({
   onDrawerClose() {
     console.log('[Home] Closing record drawer')
     this.setData({
-      showDrawer: false
+      showDrawer: false,
+      drawerMode: 'create',
+      selectedRecord: null
     })
   },
 
@@ -119,10 +127,14 @@ Page({
   onRecordSave(e) {
     const recordData = e.detail
     console.log('[Home] Record saved:', recordData)
-    this.setData({ recordsLoaded: false })
+    this.setData({ recordsStatus: 'idle' })
 
     if (!wx.cloud) {
-      this.saveRecordToStorage(recordData)
+      wx.showToast({
+        title: '云能力不可用',
+        icon: 'none',
+        duration: 2000
+      })
       return
     }
 
@@ -135,31 +147,19 @@ Page({
       .add({ data: payload })
       .then(res => {
         console.log('[Home] Record saved to cloud:', res)
-        this.saveRecordToStorage(recordData)
+        if (this.data.activeTab === 'stats') {
+          this.setData({ recordsStatus: 'loading' })
+          this.loadRecords(true, false)
+        }
       })
       .catch(error => {
         console.error('[Home] Failed to save record to cloud:', error)
-        this.saveRecordToStorage(recordData)
         wx.showToast({
-          title: '云端保存失败，已存本地',
+          title: '云端保存失败，请重试',
           icon: 'none',
           duration: 2000
         })
       })
-  },
-
-  saveRecordToStorage(recordData) {
-    try {
-      let records = wx.getStorageSync('cooking_records') || []
-      const exists = records.some(item => item && item.timestamp === recordData.timestamp)
-      if (!exists) {
-        records.unshift(recordData)
-      }
-      wx.setStorageSync('cooking_records', records)
-      console.log('[Home] Record saved to storage, total:', records.length)
-    } catch (error) {
-      console.error('[Home] Failed to save record to storage:', error)
-    }
   },
 
   /**
@@ -172,12 +172,14 @@ Page({
     wx.vibrateShort({ type: 'light' })
 
     // 切换 tab
-    this.setData({
-      activeTab: tab
-    })
+    const nextData = { activeTab: tab }
+    if (tab === 'stats') {
+      nextData.recordsStatus = 'loading'
+    }
+    this.setData(nextData)
 
     if (tab === 'stats') {
-      this.loadRecords(true)
+      this.loadRecords(true, false)
     }
 
     // 提示（可选）
@@ -198,15 +200,147 @@ Page({
     }
   },
 
-  loadRecords(force) {
-    if (this.data.recordsLoading || (!force && this.data.recordsLoaded)) {
+  onRecordCardTap(e) {
+    const index = e.currentTarget.dataset.index
+    const record = this.data.records[index]
+    if (!record) {
+      return
+    }
+    this.setData({
+      selectedRecord: record,
+      drawerMode: 'view',
+      showDrawer: true
+    })
+  },
+
+  onRecordUpdate(e) {
+    const recordData = e.detail || {}
+    const recordId = recordData._id || recordData.id
+    if (!recordId) {
+      wx.showToast({
+        title: '记录标识缺失',
+        icon: 'none',
+        duration: 2000
+      })
       return
     }
 
-    this.setData({ recordsLoading: true })
+    if (!wx.cloud) {
+      wx.showToast({
+        title: '云能力不可用',
+        icon: 'none',
+        duration: 2000
+      })
+      return
+    }
+
+    const db = wx.cloud.database()
+    const payload = {
+      types: recordData.types || [],
+      typeCounts: recordData.typeCounts || {},
+      method: recordData.method || '',
+      score: recordData.score || 0,
+      timestamp: recordData.timestamp,
+      date: recordData.date,
+      updatedAt: db.serverDate()
+    }
+
+    db.collection('cooking_records')
+      .doc(recordId)
+      .update({ data: payload })
+      .then(() => {
+        wx.showToast({
+          title: '记录已更新',
+          icon: 'success',
+          duration: 2000
+        })
+        if (this.data.activeTab === 'stats') {
+          this.setData({ recordsStatus: 'loading' })
+          this.loadRecords(true, false)
+        }
+      })
+      .catch(error => {
+        console.error('[Home] Failed to update record:', error)
+        wx.showToast({
+          title: '更新失败，请重试',
+          icon: 'none',
+          duration: 2000
+        })
+      })
+  },
+
+  onRecordDelete(e) {
+    const recordId = e.detail && (e.detail.id || e.detail._id)
+    if (!recordId) {
+      wx.showToast({
+        title: '记录标识缺失',
+        icon: 'none',
+        duration: 2000
+      })
+      return
+    }
 
     if (!wx.cloud) {
-      this.setRecordsFromStorage()
+      wx.showToast({
+        title: '云能力不可用',
+        icon: 'none',
+        duration: 2000
+      })
+      return
+    }
+
+    const db = wx.cloud.database()
+    db.collection('cooking_records')
+      .doc(recordId)
+      .remove()
+      .then(() => {
+        wx.showToast({
+          title: '记录已删除',
+          icon: 'success',
+          duration: 2000
+        })
+        if (this.data.activeTab === 'stats') {
+          this.setData({ recordsStatus: 'loading' })
+          this.loadRecords(true, false)
+        }
+      })
+      .catch(error => {
+        console.error('[Home] Failed to delete record:', error)
+        wx.showToast({
+          title: '删除失败，请重试',
+          icon: 'none',
+          duration: 2000
+        })
+      })
+  },
+
+  loadRecords(force, isRefresh) {
+    if (this.recordsFetching || (!force && this.data.recordsStatus === 'loaded')) {
+      return
+    }
+
+    this.recordsFetching = true
+    const nextStatus = isRefresh ? this.data.recordsStatus : 'loading'
+    this.setData({
+      recordsStatus: nextStatus,
+      recordsRefreshing: !!isRefresh
+    })
+
+    if (!wx.cloud) {
+      this.recordsFetching = false
+      const nextData = {
+        recordsStatus: 'loaded',
+        recordsRefreshing: false
+      }
+      if (!isRefresh) {
+        nextData.records = []
+      }
+      this.setData(nextData)
+      wx.showToast({
+        title: '云能力不可用',
+        icon: 'none',
+        duration: 2000
+      })
       return
     }
 
@@ -217,72 +351,31 @@ Page({
       .get()
       .then(res => {
         const list = Array.isArray(res.data) ? res.data : []
-        const merged = this.mergeRecords(list)
-        const records = this.formatRecords(merged)
+        const records = this.formatRecords(list)
         this.setData({
           records,
-          recordsLoading: false,
-          recordsLoaded: true
+          recordsStatus: 'loaded',
+          recordsRefreshing: false
         })
-        this.cacheRecords(merged)
+        this.recordsFetching = false
       })
       .catch(error => {
         console.error('[Home] Failed to load records from cloud:', error)
-        this.setRecordsFromStorage()
+        this.recordsFetching = false
+        const nextData = {
+          recordsStatus: 'loaded',
+          recordsRefreshing: false
+        }
+        if (!isRefresh) {
+          nextData.records = []
+        }
+        this.setData(nextData)
+        wx.showToast({
+          title: '加载失败，请重试',
+          icon: 'none',
+          duration: 2000
+        })
       })
-  },
-
-  mergeRecords(cloudRecords) {
-    let localRecords = []
-    try {
-      localRecords = wx.getStorageSync('cooking_records') || []
-    } catch (error) {
-      console.error('[Home] Failed to read local records for merge:', error)
-    }
-
-    const merged = []
-    const seen = {}
-    const addRecord = record => {
-      if (!record) {
-        return
-      }
-      const key = record.timestamp || record._id || record.id
-      if (key && seen[key]) {
-        return
-      }
-      if (key) {
-        seen[key] = true
-      }
-      merged.push(record)
-    }
-
-    cloudRecords.forEach(addRecord)
-    localRecords.forEach(addRecord)
-
-    merged.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
-    return merged
-  },
-
-  cacheRecords(records) {
-    try {
-      wx.setStorageSync('cooking_records', records)
-    } catch (error) {
-      console.error('[Home] Failed to cache records:', error)
-    }
-  },
-
-  setRecordsFromStorage() {
-    let records = []
-    try {
-      records = wx.getStorageSync('cooking_records') || []
-    } catch (error) {
-      console.error('[Home] Failed to load records from storage:', error)
-    }
-    this.setData({
-      records: this.formatRecords(records),
-      recordsLoading: false,
-      recordsLoaded: true
-    })
   },
 
   formatRecords(records) {
@@ -352,5 +445,9 @@ Page({
     const month = String(date.getMonth() + 1).padStart(2, '0')
     const day = String(date.getDate()).padStart(2, '0')
     return `${year}.${month}.${day}`
+  },
+
+  onRecordsRefresh() {
+    this.loadRecords(true, true)
   }
 })

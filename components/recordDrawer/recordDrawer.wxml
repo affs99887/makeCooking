@@ -7,7 +7,7 @@
       wx:if="{{isAnimating}}">
 
   <!-- 抽屉容器 -->
-  <view class="drawer-container {{isOpen ? 'is-open' : ''}} {{isDragging ? 'is-dragging' : ''}} {{isExpanded ? 'is-expanded' : ''}}"
+  <view class="drawer-container {{isOpen ? 'is-open' : ''}} {{isDragging ? 'is-dragging' : ''}} {{isExpanded ? 'is-expanded' : ''}} {{isReadonly ? 'is-readonly' : ''}}"
         style="transform: translate3d(0, {{drawerTranslate}}px, 0);"
         catchtap="onDrawerTap">
     <!-- 柔和光晕背景 -->
@@ -30,8 +30,8 @@
     <view class="drawer-header">
       <view class="header-orb header-orb-left"></view>
       <view class="header-orb header-orb-right"></view>
-      <text class="drawer-title">今日烹饪记录</text>
-      <text class="drawer-subtitle">把味道写进日记</text>
+      <text class="drawer-title">{{drawerTitle}}</text>
+      <text class="drawer-subtitle">{{drawerSubtitle}}</text>
       <view class="header-divider"></view>
     </view>
 
@@ -196,6 +196,7 @@
             max="4100"
             step="100"
             value="{{currentScore}}"
+            disabled="{{isReadonly}}"
             activeColor="rgba(0, 0, 0, 0)"
             backgroundColor="rgba(0, 0, 0, 0)"
             block-color="#ffffff"
@@ -226,14 +227,27 @@
   <view class="drawer-footer {{isOpen ? 'is-open' : ''}}"
         catchtap="onDrawerTap">
     <view class="footer-glow"></view>
+    <view class="footer-actions" wx:if="{{currentMode === 'view'}}">
+      <button class="action-button edit-button"
+              bindtap="onEdit"
+              hover-class="action-hover">
+        编辑
+      </button>
+      <button class="action-button delete-button"
+              bindtap="onDelete"
+              hover-class="action-hover">
+        删除记录
+      </button>
+    </view>
     <button class="save-button {{canSave ? 'enabled' : ''}}"
+            wx:if="{{currentMode !== 'view'}}"
             bindtap="onSave"
             disabled="{{!canSave}}"
             hover-class="button-hover">
       <view class="button-shimmer"></view>
       <view class="button-content">
         <text class="button-icon">✦</text>
-        <text class="button-text">保存记录</text>
+        <text class="button-text">{{currentMode === 'edit' ? '保存修改' : '保存记录'}}</text>
       </view>
       <view class="button-pulse" wx:if="{{canSave}}"></view>
     </button>

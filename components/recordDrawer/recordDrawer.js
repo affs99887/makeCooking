@@ -8,6 +8,23 @@ const BASE_TYPE_COUNTS = {
 }
 const BASE_SPACER_HEIGHT = 160
 const MAX_MASK_BLUR = 20
+const MODE_CONFIG = {
+  create: {
+    title: '今日烹饪记录',
+    subtitle: '把味道写进日记',
+    readonly: false
+  },
+  view: {
+    title: '记录详情',
+    subtitle: '把每一次味道收进记忆',
+    readonly: true
+  },
+  edit: {
+    title: '编辑记录',
+    subtitle: '调整你的记录',
+    readonly: false
+  }
+}
 
 Component({
   options: {
@@ -19,6 +36,16 @@ Component({
       type: Boolean,
       value: false,
       observer: 'onVisibleChange'
+    },
+    mode: {
+      type: String,
+      value: 'create',
+      observer: 'onModeChange'
+    },
+    record: {
+      type: Object,
+      value: null,
+      observer: 'onRecordChange'
     }
   },
 
@@ -27,6 +54,11 @@ Component({
     isOpen: false,
     isDragging: false,
     isExpanded: false,
+    currentMode: 'create',
+    isReadonly: false,
+    drawerTitle: MODE_CONFIG.create.title,
+    drawerSubtitle: MODE_CONFIG.create.subtitle,
+    currentRecordId: '',
     drawerTranslate: 0,
     maskBlur: 0,
     windowHeight: 0,
@@ -41,6 +73,9 @@ Component({
 
   lifetimes: {
     attached() {
+      this.currentRecordMeta = {}
+      this.onModeChange(this.properties.mode)
+      this.onRecordChange(this.properties.record)
       this.initDrawerMetrics()
       console.log('[RecordDrawer] Component attached')
     },
@@ -196,6 +231,7 @@ Component({
         setTimeout(() => {
           this.setData({ isAnimating: false })
         }, 800)
+        this.setMode(this.normalizeMode(this.properties.mode))
       }
     },
 
@@ -291,6 +327,9 @@ Component({
      * 切换烹饪风格选择（多选）
      */
     onTypeToggle(e) {
+      if (this.data.isReadonly) {
+        return
+      }
       if (this.ignoreTypeTap) {
         this.ignoreTypeTap = false
         return
@@ -326,6 +365,9 @@ Component({
      * 减少烹饪风格次数（长按或点击计数）
      */
     onTypeDecrease(e) {
+      if (this.data.isReadonly) {
+        return
+      }
       const type = e.currentTarget.dataset.type
       const typeCounts = Object.assign({}, this.data.typeCounts)
 
@@ -361,6 +403,9 @@ Component({
      * 选择烹饪手法（单选）
      */
     onMethodSelect(e) {
+      if (this.data.isReadonly) {
+        return
+      }
       const method = e.currentTarget.dataset.method
 
       // 触觉反馈
@@ -377,6 +422,9 @@ Component({
      * 评分滑块变化中
      */
     onScoreChanging(e) {
+      if (this.data.isReadonly) {
+        return
+      }
       this.setData({
         currentScore: e.detail.value
       })
@@ -386,6 +434,9 @@ Component({
      * 评分滑块变化完成
      */
     onScoreChange(e) {
+      if (this.data.isReadonly) {
+        return
+      }
       const score = e.detail.value
 
       // 触觉反馈
@@ -422,37 +473,30 @@ Component({
      * 保存记录
      */
     onSave() {
-      if (!this.data.canSave) {
+      if (this.data.isReadonly || !this.data.canSave) {
         return
       }
 
-      // 强烈触觉反馈
       wx.vibrateShort({ type: 'heavy' })
 
-      const typeCounts = Object.assign({}, this.data.typeCounts)
-      const types = Object.keys(typeCounts).filter(key => typeCounts[key] > 0)
-      const recordData = {
-        types,
-        typeCounts,
-        method: this.data.selectedMethod,
-        score: this.data.currentScore,
-        timestamp: Date.now(),
-        date: this.formatDate(new Date())
+      if (this.data.currentMode === 'edit') {
+        const recordData = this.buildRecordData(true)
+        console.log('[RecordDrawer] Update record:', recordData)
+        this.triggerEvent('update', recordData)
+        setTimeout(() => {
+          this.closeDrawer()
+        }, 300)
+        return
       }
 
+      const recordData = this.buildRecordData(false)
       console.log('[RecordDrawer] Save record:', recordData)
-
-      // 触发保存事件，传递记录数据
       this.triggerEvent('save', recordData)
-
-      // 显示成功提示
       wx.showToast({
         title: '记录保存成功',
         icon: 'success',
         duration: 2000
       })
-
-      // 延迟关闭抽屉并重置
       setTimeout(() => {
         this.closeDrawer()
         this.resetForm()
@@ -468,8 +512,10 @@ Component({
         selectedMethod: '',
         showMethod: false,
         currentScore: 0,
-        canSave: false
+        canSave: false,
+        currentRecordId: ''
       })
+      this.currentRecordMeta = {}
     },
 
     /**
@@ -480,6 +526,124 @@ Component({
       const month = String(date.getMonth() + 1).padStart(2, '0')
       const day = String(date.getDate()).padStart(2, '0')
       return `${year}.${month}.${day}`
+    },
+
+    onModeChange(newVal) {
+      const mode = this.normalizeMode(newVal)
+      this.setMode(mode)
+      if (mode === 'create' && !this.properties.record) {
+        this.resetForm()
+      }
+    },
+
+    onRecordChange(record) {
+      if (record && typeof record === 'object') {
+        this.applyRecord(record)
+        return
+      }
+      if (this.normalizeMode(this.properties.mode) === 'create') {
+        this.resetForm()
+      }
+    },
+
+    normalizeMode(mode) {
+      if (mode === 'view' || mode === 'edit' || mode === 'create') {
+        return mode
+      }
+      return 'create'
+    },
+
+    setMode(mode) {
+      const config = MODE_CONFIG[mode] || MODE_CONFIG.create
+      this.setData({
+        currentMode: mode,
+        isReadonly: config.readonly,
+        drawerTitle: config.title,
+        drawerSubtitle: config.subtitle
+      })
+    },
+
+    applyRecord(record) {
+      const typeCounts = this.normalizeTypeCounts(record)
+      const showMethod = typeCounts.service > 0
+      let selectedMethod = record.method || ''
+      if (!showMethod) {
+        selectedMethod = ''
+      }
+      const score = Number(record.score || 0)
+      const recordId = record._id || record.id || ''
+      this.currentRecordMeta = {
+        timestamp: record.timestamp,
+        date: record.date
+      }
+
+      this.setData({
+        typeCounts,
+        showMethod,
+        selectedMethod,
+        currentScore: score,
+        currentRecordId: recordId
+      })
+
+      this.checkCanSave()
+    },
+
+    normalizeTypeCounts(record) {
+      if (record.typeCounts && typeof record.typeCounts === 'object') {
+        return Object.assign({}, BASE_TYPE_COUNTS, record.typeCounts)
+      }
+      const counts = Object.assign({}, BASE_TYPE_COUNTS)
+      const types = Array.isArray(record.types) ? record.types : []
+      types.forEach(type => {
+        if (Object.prototype.hasOwnProperty.call(counts, type)) {
+          counts[type] += 1
+        }
+      })
+      return counts
+    },
+
+    buildRecordData(includeId) {
+      const typeCounts = Object.assign({}, this.data.typeCounts)
+      const types = Object.keys(typeCounts).filter(key => typeCounts[key] > 0)
+      const meta = this.currentRecordMeta || {}
+      const timestamp = meta.timestamp || Date.now()
+      const date = meta.date || this.formatDate(new Date())
+      const recordData = {
+        types,
+        typeCounts,
+        method: this.data.selectedMethod,
+        score: this.data.currentScore,
+        timestamp,
+        date
+      }
+      if (includeId) {
+        recordData._id = this.data.currentRecordId
+      }
+      return recordData
+    },
+
+    onEdit() {
+      this.setMode('edit')
+      this.checkCanSave()
+    },
+
+    onDelete() {
+      if (!this.data.currentRecordId) {
+        return
+      }
+      wx.showModal({
+        title: '删除记录',
+        content: '确定要删除这条记录吗？',
+        confirmText: '删除',
+        confirmColor: '#d57b73',
+        cancelText: '取消',
+        success: res => {
+          if (res.confirm) {
+            this.triggerEvent('delete', { id: this.data.currentRecordId })
+            this.closeDrawer()
+          }
+        }
+      })
     }
   }
 })

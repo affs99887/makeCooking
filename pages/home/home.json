@@ -2,7 +2,7 @@
   "navigationStyle": "custom",
   "backgroundColor": "#FAF8F5",
   "backgroundTextStyle": "dark",
-  "enablePullDownRefresh": true,
+  "enablePullDownRefresh": false,
   "disableScroll": false,
   "usingComponents": {
     "splash-screen": "/components/splashScreen/splashScreen",
