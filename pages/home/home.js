@@ -106,15 +106,40 @@ Page({
     const recordData = e.detail
     console.log('[Home] Record saved:', recordData)
 
-    // TODO: 保存到本地存储或云端
-    // 示例：保存到本地存储
+    if (!wx.cloud) {
+      this.saveRecordToStorage(recordData)
+      return
+    }
+
+    const db = wx.cloud.database()
+    const payload = Object.assign({}, recordData, {
+      createdAt: db.serverDate()
+    })
+
+    db.collection('cooking_records')
+      .add({ data: payload })
+      .then(res => {
+        console.log('[Home] Record saved to cloud:', res)
+      })
+      .catch(error => {
+        console.error('[Home] Failed to save record to cloud:', error)
+        this.saveRecordToStorage(recordData)
+        wx.showToast({
+          title: '云端保存失败，已存本地',
+          icon: 'none',
+          duration: 2000
+        })
+      })
+  },
+
+  saveRecordToStorage(recordData) {
     try {
       let records = wx.getStorageSync('cooking_records') || []
-      records.unshift(recordData) // 添加到数组开头
+      records.unshift(recordData)
       wx.setStorageSync('cooking_records', records)
       console.log('[Home] Record saved to storage, total:', records.length)
     } catch (error) {
-      console.error('[Home] Failed to save record:', error)
+      console.error('[Home] Failed to save record to storage:', error)
     }
   },
 

@@ -1,6 +1,15 @@
 // app.js
 App({
   onLaunch() {
+    if (wx.cloud) {
+      wx.cloud.init({
+        env: 'cloudbase-8grsywca3449ec3f',
+        traceUser: true
+      })
+    } else {
+      console.warn('[App] wx.cloud is not available')
+    }
+
     // 展示本地存储能力
     const logs = wx.getStorageSync('logs') || []
     logs.unshift(Date.now())
