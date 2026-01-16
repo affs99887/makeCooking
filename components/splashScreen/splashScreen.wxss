@@ -223,7 +223,7 @@
 
 /* 主品牌文字 - 优雅的衬线字体 */
 .brand-text-main {
-    font-family: 'Georgia', 'Palatino Linotype', 'Times New Roman', serif;
+    font-family: 'SourceHanSerifCN', 'Georgia', 'Palatino Linotype', 'Times New Roman', serif;
     font-size: 64rpx;
     font-weight: 500;
     letter-spacing: 2rpx;

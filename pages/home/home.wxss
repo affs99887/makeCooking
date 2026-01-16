@@ -57,7 +57,7 @@ page {
 
 /* 日期显示 */
 .date-display {
-  font-family: 'Georgia', 'Times New Roman', serif;
+  font-family: 'Georgia', 'SourceHanSerifCN', 'Times New Roman', serif;
   font-size: 28rpx;
   color: var(--ink-muted);
   letter-spacing: 2rpx;
@@ -101,7 +101,7 @@ page {
 
 /* 主问候语 */
 .greeting {
-  font-family: 'Georgia', 'Palatino', 'Times New Roman', serif;
+  font-family: 'SourceHanSerifCN', 'Georgia', 'Palatino', 'Times New Roman', serif;
   font-size: 56rpx;
   font-weight: 400;
   color: var(--ink);
@@ -604,7 +604,7 @@ page {
 
 /* Tab 文字 - 衬线字体 */
 .tab-label {
-  font-family: 'Georgia', 'Palatino', 'Times New Roman', serif;
+  font-family: 'SourceHanSerifCN', 'Georgia', 'Palatino', 'Times New Roman', serif;
   font-size: 22rpx;
   font-weight: 400;
   color: var(--ink-muted);
@@ -748,7 +748,7 @@ page {
 }
 
 .stats-title {
-  font-family: 'Georgia', 'Palatino', 'Times New Roman', serif;
+  font-family: 'SourceHanSerifCN', 'Georgia', 'Palatino', 'Times New Roman', serif;
   font-size: 48rpx;
   font-weight: 400;
   color: var(--ink);
@@ -756,7 +756,7 @@ page {
 }
 
 .stats-subtitle {
-  font-family: 'Georgia', 'Times New Roman', serif;
+  font-family: 'SourceHanSerifCN', 'Georgia', 'Times New Roman', serif;
   font-size: 24rpx;
   color: var(--ink-soft);
   letter-spacing: 1.5rpx;
@@ -810,7 +810,7 @@ page {
 
 .records-state-title {
   display: block;
-  font-family: 'Georgia', 'Times New Roman', serif;
+  font-family: 'SourceHanSerifCN', 'Georgia', 'Times New Roman', serif;
   font-size: 30rpx;
   color: var(--ink);
   letter-spacing: 2rpx;
@@ -906,7 +906,7 @@ page {
 
 .empty-title {
   display: block;
-  font-family: 'Georgia', 'Times New Roman', serif;
+  font-family: 'SourceHanSerifCN', 'Georgia', 'Times New Roman', serif;
   font-size: 30rpx;
   color: var(--ink);
   letter-spacing: 2rpx;
@@ -948,7 +948,7 @@ page {
 }
 
 .record-date {
-  font-family: 'Georgia', 'Times New Roman', serif;
+  font-family: 'Georgia', 'SourceHanSerifCN', 'Times New Roman', serif;
   font-size: 30rpx;
   color: var(--ink);
   letter-spacing: 1.5rpx;
@@ -971,7 +971,7 @@ page {
 }
 
 .score-value {
-  font-family: 'Georgia', 'Times New Roman', serif;
+  font-family: 'Georgia', 'SourceHanSerifCN', 'Times New Roman', serif;
   font-size: 30rpx;
   color: var(--lavender-deep);
 }
@@ -1020,7 +1020,7 @@ page {
 }
 
 .meta-value {
-  font-family: 'Georgia', 'Times New Roman', serif;
+  font-family: 'SourceHanSerifCN', 'Georgia', 'Times New Roman', serif;
   font-size: 24rpx;
   color: var(--ink);
 }
