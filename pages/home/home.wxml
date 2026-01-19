@@ -38,6 +38,39 @@
       <text class="stats-subtitle">把每一次味道收进记忆</text>
     </view>
 
+    <view class="stats-filters">
+      <picker class="filter-picker"
+              range="{{filterYearOptions}}"
+              range-key="label"
+              value="{{filterYearIndex}}"
+              bindchange="onFilterYearChange">
+        <view class="filter-pill">
+          <text class="filter-label">年</text>
+          <text class="filter-value">{{filterYearOptions[filterYearIndex].label}}</text>
+        </view>
+      </picker>
+      <picker class="filter-picker"
+              range="{{filterMonthOptions}}"
+              range-key="label"
+              value="{{filterMonthIndex}}"
+              bindchange="onFilterMonthChange">
+        <view class="filter-pill">
+          <text class="filter-label">月</text>
+          <text class="filter-value">{{filterMonthOptions[filterMonthIndex].label}}</text>
+        </view>
+      </picker>
+      <picker class="filter-picker"
+              range="{{filterDayOptions}}"
+              range-key="label"
+              value="{{filterDayIndex}}"
+              bindchange="onFilterDayChange">
+        <view class="filter-pill">
+          <text class="filter-label">日</text>
+          <text class="filter-value">{{filterDayOptions[filterDayIndex].label}}</text>
+        </view>
+      </picker>
+    </view>
+
     <scroll-view class="records-scroll"
                  scroll-y
                  refresher-enabled
@@ -52,26 +85,26 @@
           </view>
         </view>
 
-        <view class="state-layer records-empty-layer {{recordsStatus === 'loaded' && records.length === 0 ? 'is-visible' : ''}}">
+        <view class="state-layer records-empty-layer {{recordsStatus === 'loaded' && filteredRecords.length === 0 ? 'is-visible' : ''}}">
           <view class="records-empty">
             <view class="empty-illustration">
               <view class="empty-orb"></view>
               <view class="empty-ring ring-1"></view>
               <view class="empty-ring ring-2"></view>
             </view>
-            <text class="empty-title">还没有记录</text>
-            <text class="empty-subtitle">从今天开始写下味道</text>
+            <text class="empty-title">{{filtersActive ? '没有符合筛选的记录' : '还没有记录'}}</text>
+            <text class="empty-subtitle">{{filtersActive ? '试试调整筛选条件' : '从今天开始写下味道'}}</text>
           </view>
         </view>
 
-        <view class="records-list {{recordsStatus === 'loaded' && records.length > 0 ? 'is-visible' : ''}}">
-          <block wx:for="{{records}}" wx:key="recordId" wx:for-item="record" wx:for-index="idx">
+        <view class="records-list {{recordsStatus === 'loaded' && filteredRecords.length > 0 ? 'is-visible' : ''}}">
+          <block wx:for="{{filteredRecords}}" wx:key="recordId" wx:for-item="record" wx:for-index="idx">
             <view class="record-card"
                   bindtap="onRecordCardTap"
                   data-index="{{idx}}">
               <view class="record-card-content">
                 <view class="record-header">
-                  <text class="record-date">{{record.displayDate}}</text>
+                  <text class="record-date">{{record.displayDateTime}}</text>
                   <view class="record-score">
                     <text class="score-label">评分</text>
                     <text class="score-value">{{record.score}}</text>
@@ -85,7 +118,7 @@
                   </view>
                 </view>
 
-                <view class="record-meta">
+                <view class="record-meta" wx:if="{{record.methodLabel}}">
                   <text class="meta-label">手法</text>
                   <text class="meta-value">{{record.methodLabel}}</text>
                 </view>

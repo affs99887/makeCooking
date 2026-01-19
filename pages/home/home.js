@@ -1,10 +1,28 @@
 // pages/home/home.js
 const TYPE_LABELS = {
-  standard: '标准',
-  service: '服务',
-  backin: '回味',
-  lite: '清淡',
-  reverse: '反转'
+  standard: 'Standard',
+  service: 'Service',
+  backin: 'Backin',
+  lite: 'Lite',
+  reverse: 'Reverse',
+  suck: 'Suck'
+}
+
+const createAllOption = () => ({ label: '全部', value: '' })
+const buildMonthOptions = () => {
+  const options = [createAllOption()]
+  for (let month = 1; month <= 12; month += 1) {
+    options.push({ label: `${month}月`, value: month })
+  }
+  return options
+}
+const buildDayOptions = days => {
+  const options = [createAllOption()]
+  const maxDays = Math.max(Number(days) || 31, 1)
+  for (let day = 1; day <= maxDays; day += 1) {
+    options.push({ label: `${day}日`, value: day })
+  }
+  return options
 }
 
 Page({
@@ -19,8 +37,16 @@ Page({
     drawerMode: 'create',
     selectedRecord: null,
     records: [],
+    filteredRecords: [],
     recordsStatus: 'idle',
-    recordsRefreshing: false
+    recordsRefreshing: false,
+    filtersActive: false,
+    filterYearOptions: [createAllOption()],
+    filterMonthOptions: buildMonthOptions(),
+    filterDayOptions: buildDayOptions(31),
+    filterYearIndex: 0,
+    filterMonthIndex: 0,
+    filterDayIndex: 0
   },
 
   onLoad() {
@@ -201,8 +227,10 @@ Page({
   },
 
   onRecordCardTap(e) {
-    const index = e.currentTarget.dataset.index
-    const record = this.data.records[index]
+    const index = Number(e.currentTarget.dataset.index || 0)
+    const record =
+      (Array.isArray(this.data.filteredRecords) && this.data.filteredRecords[index])
+      || this.data.records[index]
     if (!record) {
       return
     }
@@ -337,6 +365,14 @@ Page({
       }
       if (!isRefresh) {
         nextData.records = []
+        nextData.filteredRecords = []
+        nextData.filtersActive = false
+        nextData.filterYearOptions = [createAllOption()]
+        nextData.filterMonthOptions = buildMonthOptions()
+        nextData.filterDayOptions = buildDayOptions(31)
+        nextData.filterYearIndex = 0
+        nextData.filterMonthIndex = 0
+        nextData.filterDayIndex = 0
       }
       this.setData(nextData)
       wx.showToast({
@@ -355,8 +391,18 @@ Page({
       .then(res => {
         const list = Array.isArray(res.data) ? res.data : []
         const records = this.formatRecords(list)
+        const filterState = this.syncFilterOptions(records)
+        const filterResult = this.applyRecordFilters(records, filterState)
         this.setData({
           records,
+          filteredRecords: filterResult.filteredRecords,
+          filtersActive: filterResult.filtersActive,
+          filterYearOptions: filterState.filterYearOptions,
+          filterMonthOptions: filterState.filterMonthOptions,
+          filterDayOptions: filterState.filterDayOptions,
+          filterYearIndex: filterState.filterYearIndex,
+          filterMonthIndex: filterState.filterMonthIndex,
+          filterDayIndex: filterState.filterDayIndex,
           recordsStatus: 'loaded',
           recordsRefreshing: false
         })
@@ -371,6 +417,14 @@ Page({
         }
         if (!isRefresh) {
           nextData.records = []
+          nextData.filteredRecords = []
+          nextData.filtersActive = false
+          nextData.filterYearOptions = [createAllOption()]
+          nextData.filterMonthOptions = buildMonthOptions()
+          nextData.filterDayOptions = buildDayOptions(31)
+          nextData.filterYearIndex = 0
+          nextData.filterMonthIndex = 0
+          nextData.filterDayIndex = 0
         }
         this.setData(nextData)
         wx.showToast({
@@ -385,29 +439,37 @@ Page({
     return (records || []).map((record, index) => {
       const typeCounts = this.normalizeTypeCounts(record)
       const tags = this.buildTags(typeCounts)
-      const displayDate = record.date || this.formatDateFromTimestamp(record.timestamp) || '--'
-      const methodLabel = record.method || '未选择'
+      const dateParts = this.parseRecordDateParts(record)
+      const displayDate = dateParts
+        ? this.formatDateParts(dateParts)
+        : (record.date || this.formatDateFromTimestamp(record.timestamp) || '--')
+      const timeValue = record.time || this.formatTimeFromTimestamp(record.timestamp) || ''
+      const displayDateTime = timeValue ? `${displayDate} ${timeValue}` : displayDate
+      const methodLabel = record.method || ''
 
       return Object.assign({}, record, {
         typeCounts,
         tags,
         displayDate,
+        displayDateTime,
         methodLabel,
+        dateParts,
         recordId: record._id || record.id || `${record.timestamp || 'local'}-${index}`
       })
     })
   },
 
   normalizeTypeCounts(record) {
-    if (record.typeCounts && typeof record.typeCounts === 'object') {
-      return record.typeCounts
-    }
     const counts = {
       standard: 0,
       service: 0,
       backin: 0,
       lite: 0,
-      reverse: 0
+      reverse: 0,
+      suck: 0
+    }
+    if (record.typeCounts && typeof record.typeCounts === 'object') {
+      return Object.assign({}, counts, record.typeCounts)
     }
     const types = Array.isArray(record.types) ? record.types : []
     types.forEach(type => {
@@ -432,6 +494,192 @@ Page({
     }, [])
   },
 
+  getSelectedFilterValue(options, index) {
+    if (!Array.isArray(options)) {
+      return ''
+    }
+    const option = options[index]
+    if (!option) {
+      return ''
+    }
+    return option.value
+  },
+
+  findOptionIndex(options, value) {
+    if (!Array.isArray(options)) {
+      return 0
+    }
+    const idx = options.findIndex(option => option.value === value)
+    return idx >= 0 ? idx : 0
+  },
+
+  buildYearOptions(records) {
+    const years = new Set()
+    ;(records || []).forEach(record => {
+      const parts = record.dateParts || this.parseRecordDateParts(record)
+      if (parts && parts.year) {
+        years.add(parts.year)
+      }
+    })
+    const sortedYears = Array.from(years).sort((a, b) => b - a)
+    return [createAllOption(), ...sortedYears.map(year => ({
+      label: `${year}年`,
+      value: year
+    }))]
+  },
+
+  getDayOptions(yearValue, monthValue) {
+    if (yearValue && monthValue) {
+      const days = new Date(yearValue, monthValue, 0).getDate()
+      return buildDayOptions(days)
+    }
+    return buildDayOptions(31)
+  },
+
+  syncFilterOptions(records) {
+    const filterYearOptions = this.buildYearOptions(records)
+    const filterMonthOptions = buildMonthOptions()
+    const prevYearValue = this.getSelectedFilterValue(
+      this.data.filterYearOptions,
+      this.data.filterYearIndex
+    )
+    const prevMonthValue = this.getSelectedFilterValue(
+      this.data.filterMonthOptions,
+      this.data.filterMonthIndex
+    )
+    const prevDayValue = this.getSelectedFilterValue(
+      this.data.filterDayOptions,
+      this.data.filterDayIndex
+    )
+    const filterYearIndex = this.findOptionIndex(filterYearOptions, prevYearValue)
+    const filterMonthIndex = this.findOptionIndex(filterMonthOptions, prevMonthValue)
+    const yearValue = this.getSelectedFilterValue(filterYearOptions, filterYearIndex)
+    const monthValue = this.getSelectedFilterValue(filterMonthOptions, filterMonthIndex)
+    const filterDayOptions = this.getDayOptions(yearValue, monthValue)
+    const filterDayIndex = this.findOptionIndex(filterDayOptions, prevDayValue)
+
+    return {
+      filterYearOptions,
+      filterMonthOptions,
+      filterDayOptions,
+      filterYearIndex,
+      filterMonthIndex,
+      filterDayIndex
+    }
+  },
+
+  applyRecordFilters(records, filterState) {
+    const yearOptions = filterState ? filterState.filterYearOptions : this.data.filterYearOptions
+    const monthOptions = filterState ? filterState.filterMonthOptions : this.data.filterMonthOptions
+    const dayOptions = filterState ? filterState.filterDayOptions : this.data.filterDayOptions
+    const yearIndex = filterState ? filterState.filterYearIndex : this.data.filterYearIndex
+    const monthIndex = filterState ? filterState.filterMonthIndex : this.data.filterMonthIndex
+    const dayIndex = filterState ? filterState.filterDayIndex : this.data.filterDayIndex
+    const yearValue = this.getSelectedFilterValue(yearOptions, yearIndex)
+    const monthValue = this.getSelectedFilterValue(monthOptions, monthIndex)
+    const dayValue = this.getSelectedFilterValue(dayOptions, dayIndex)
+    const filtersActive = Boolean(yearValue || monthValue || dayValue)
+
+    const filteredRecords = (records || []).filter(record => {
+      if (!filtersActive) {
+        return true
+      }
+      const parts = record.dateParts || this.parseRecordDateParts(record)
+      if (!parts) {
+        return false
+      }
+      if (yearValue && parts.year !== yearValue) {
+        return false
+      }
+      if (monthValue && parts.month !== monthValue) {
+        return false
+      }
+      if (dayValue && parts.day !== dayValue) {
+        return false
+      }
+      return true
+    })
+
+    return { filteredRecords, filtersActive }
+  },
+
+  onFilterYearChange(e) {
+    const filterYearIndex = Number(e.detail.value || 0)
+    const yearValue = this.getSelectedFilterValue(this.data.filterYearOptions, filterYearIndex)
+    const monthValue = this.getSelectedFilterValue(
+      this.data.filterMonthOptions,
+      this.data.filterMonthIndex
+    )
+    const filterDayOptions = this.getDayOptions(yearValue, monthValue)
+    const prevDayValue = this.getSelectedFilterValue(
+      this.data.filterDayOptions,
+      this.data.filterDayIndex
+    )
+    const filterDayIndex = this.findOptionIndex(filterDayOptions, prevDayValue)
+    const filterResult = this.applyRecordFilters(this.data.records, {
+      filterYearOptions: this.data.filterYearOptions,
+      filterMonthOptions: this.data.filterMonthOptions,
+      filterDayOptions,
+      filterYearIndex,
+      filterMonthIndex: this.data.filterMonthIndex,
+      filterDayIndex
+    })
+    this.setData({
+      filterYearIndex,
+      filterDayOptions,
+      filterDayIndex,
+      filteredRecords: filterResult.filteredRecords,
+      filtersActive: filterResult.filtersActive
+    })
+  },
+
+  onFilterMonthChange(e) {
+    const filterMonthIndex = Number(e.detail.value || 0)
+    const yearValue = this.getSelectedFilterValue(
+      this.data.filterYearOptions,
+      this.data.filterYearIndex
+    )
+    const monthValue = this.getSelectedFilterValue(this.data.filterMonthOptions, filterMonthIndex)
+    const filterDayOptions = this.getDayOptions(yearValue, monthValue)
+    const prevDayValue = this.getSelectedFilterValue(
+      this.data.filterDayOptions,
+      this.data.filterDayIndex
+    )
+    const filterDayIndex = this.findOptionIndex(filterDayOptions, prevDayValue)
+    const filterResult = this.applyRecordFilters(this.data.records, {
+      filterYearOptions: this.data.filterYearOptions,
+      filterMonthOptions: this.data.filterMonthOptions,
+      filterDayOptions,
+      filterYearIndex: this.data.filterYearIndex,
+      filterMonthIndex,
+      filterDayIndex
+    })
+    this.setData({
+      filterMonthIndex,
+      filterDayOptions,
+      filterDayIndex,
+      filteredRecords: filterResult.filteredRecords,
+      filtersActive: filterResult.filtersActive
+    })
+  },
+
+  onFilterDayChange(e) {
+    const filterDayIndex = Number(e.detail.value || 0)
+    const filterResult = this.applyRecordFilters(this.data.records, {
+      filterYearOptions: this.data.filterYearOptions,
+      filterMonthOptions: this.data.filterMonthOptions,
+      filterDayOptions: this.data.filterDayOptions,
+      filterYearIndex: this.data.filterYearIndex,
+      filterMonthIndex: this.data.filterMonthIndex,
+      filterDayIndex
+    })
+    this.setData({
+      filterDayIndex,
+      filteredRecords: filterResult.filteredRecords,
+      filtersActive: filterResult.filtersActive
+    })
+  },
+
   formatDateFromTimestamp(timestamp) {
     if (!timestamp) {
       return ''
@@ -448,6 +696,55 @@ Page({
     const month = String(date.getMonth() + 1).padStart(2, '0')
     const day = String(date.getDate()).padStart(2, '0')
     return `${year}.${month}.${day}`
+  },
+
+  formatDateParts(parts) {
+    if (!parts) {
+      return ''
+    }
+    const year = String(parts.year || '').padStart(4, '0')
+    const month = String(parts.month || '').padStart(2, '0')
+    const day = String(parts.day || '').padStart(2, '0')
+    return `${year}.${month}.${day}`
+  },
+
+  formatTimeFromTimestamp(timestamp) {
+    if (!timestamp) {
+      return ''
+    }
+    const date = new Date(timestamp)
+    if (Number.isNaN(date.getTime())) {
+      return ''
+    }
+    const hour = String(date.getHours()).padStart(2, '0')
+    const minute = String(date.getMinutes()).padStart(2, '0')
+    return `${hour}:${minute}`
+  },
+
+  parseRecordDateParts(record) {
+    if (record && record.date) {
+      const normalized = String(record.date).replace(/\./g, '-')
+      const parts = normalized.split('-')
+      if (parts.length >= 3) {
+        const year = Number(parts[0])
+        const month = Number(parts[1])
+        const day = Number(parts[2])
+        if (year && month && day) {
+          return { year, month, day }
+        }
+      }
+    }
+    if (record && record.timestamp) {
+      const date = new Date(record.timestamp)
+      if (!Number.isNaN(date.getTime())) {
+        return {
+          year: date.getFullYear(),
+          month: date.getMonth() + 1,
+          day: date.getDate()
+        }
+      }
+    }
+    return null
   },
 
   onRecordsRefresh() {
