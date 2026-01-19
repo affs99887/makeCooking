@@ -192,8 +192,9 @@
       </view>
 
       <!-- 评分系统 -->
-      <view class="section-block" wx:if="{{showScoreSection}}">
-        <view class="section-header score-header">
+      <view class="score-shell {{scoreSlotOpen ? 'is-open' : ''}}" wx:if="{{renderScoreSection}}">
+        <view class="section-block score-section {{scoreVisible ? 'is-visible' : ''}} {{isClosing ? 'section-exit' : ''}}">
+          <view class="section-header score-header">
           <view class="section-icon"></view>
           <text class="section-title">满意度评分</text>
           <view class="score-header-actions">
@@ -293,6 +294,7 @@
             <text class="marker">3000</text>
             <text class="marker">{{totalScoreMax}}</text>
           </view>
+        </view>
         </view>
       </view>
 

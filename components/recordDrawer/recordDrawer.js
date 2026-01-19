@@ -32,6 +32,8 @@ const TOTAL_SCORE_MAX = 4100
 const TYPE_SCORE_MAX = 4000
 const SCORE_STEP = 100
 const SECTION_EXIT_DURATION = 360
+const SCORE_SLOT_DURATION = 320
+const SCORE_FADE_DURATION = 200
 const BASE_SPACER_HEIGHT = 160
 const MAX_MASK_BLUR = 20
 const DEFAULT_DATE_LABEL = '刚刚烹饪完毕'
@@ -112,6 +114,9 @@ Component({
     totalScore: 0,
     scoreTypeList: [],
     showScoreSection: false,
+    renderScoreSection: false,
+    scoreSlotOpen: false,
+    scoreVisible: false,
     showScoreToggle: false,
     totalScoreMax: TOTAL_SCORE_MAX,
     typeScoreMax: TYPE_SCORE_MAX,
@@ -132,6 +137,7 @@ Component({
       this.clearOpenSettleTimer()
       this.clearClosingTimer()
       this.clearMethodExitTimer()
+      this.clearScoreTimers()
       console.log('[RecordDrawer] Component detached')
     }
   },
@@ -255,6 +261,21 @@ Component({
       }
     },
 
+    clearScoreTimers() {
+      if (this.scoreEnterTimer) {
+        clearTimeout(this.scoreEnterTimer)
+        this.scoreEnterTimer = null
+      }
+      if (this.scoreCollapseTimer) {
+        clearTimeout(this.scoreCollapseTimer)
+        this.scoreCollapseTimer = null
+      }
+      if (this.scoreRemoveTimer) {
+        clearTimeout(this.scoreRemoveTimer)
+        this.scoreRemoveTimer = null
+      }
+    },
+
     scheduleMethodSectionExit(shouldHide) {
       this.clearMethodExitTimer()
       if (!shouldHide) {
@@ -270,6 +291,47 @@ Component({
       }, SECTION_EXIT_DURATION)
     },
 
+    updateScoreSectionTransition(shouldShow, prevShow) {
+      if (shouldShow === prevShow) {
+        return
+      }
+      this.clearScoreTimers()
+      if (shouldShow) {
+        this.setData({
+          renderScoreSection: true,
+          scoreSlotOpen: false,
+          scoreVisible: false
+        })
+        wx.nextTick(() => {
+          if (!this.data.showScoreSection) {
+            return
+          }
+          this.setData({ scoreSlotOpen: true })
+          this.scoreEnterTimer = setTimeout(() => {
+            if (this.data.showScoreSection) {
+              this.setData({ scoreVisible: true })
+            }
+          }, SCORE_SLOT_DURATION)
+        })
+        return
+      }
+
+      if (!this.data.renderScoreSection) {
+        return
+      }
+      this.setData({ scoreVisible: false })
+      this.scoreCollapseTimer = setTimeout(() => {
+        if (!this.data.showScoreSection) {
+          this.setData({ scoreSlotOpen: false })
+          this.scoreRemoveTimer = setTimeout(() => {
+            if (!this.data.showScoreSection) {
+              this.setData({ renderScoreSection: false })
+            }
+          }, SCORE_SLOT_DURATION)
+        }
+      }, SCORE_FADE_DURATION)
+    },
+
     /**
      * 监听visible变化
      */
@@ -277,6 +339,7 @@ Component({
       this.initDrawerMetrics()
       this.clearOpenSettleTimer()
       this.clearClosingTimer()
+      this.clearScoreTimers()
       const positions = this.getDrawerPositions()
       if (newVal) {
         this.setData({ isClosing: false })
@@ -439,6 +502,7 @@ Component({
       if (!showMethod) {
         selectedMethod = ''
       }
+      const prevShowScore = this.data.showScoreSection
 
       const modeState = this.resolveScoreModeState(
         typeCounts,
@@ -469,9 +533,10 @@ Component({
         scoreModeManual: modeState.scoreModeManual,
         showScoreSection: modeState.showScoreSection,
         showScoreToggle: modeState.showScoreToggle
-      }, methodState.data, scoreState))
-
-      this.scheduleMethodSectionExit(methodState.shouldHide)
+      }, methodState.data, scoreState), () => {
+        this.scheduleMethodSectionExit(methodState.shouldHide)
+        this.updateScoreSectionTransition(modeState.showScoreSection, prevShowScore)
+      })
 
       this.checkCanSave()
     },
@@ -509,6 +574,7 @@ Component({
       if (!showMethod) {
         selectedMethod = ''
       }
+      const prevShowScore = this.data.showScoreSection
 
       const modeState = this.resolveScoreModeState(
         typeCounts,
@@ -539,9 +605,10 @@ Component({
         scoreModeManual: modeState.scoreModeManual,
         showScoreSection: modeState.showScoreSection,
         showScoreToggle: modeState.showScoreToggle
-      }, methodState.data, scoreState))
-
-      this.scheduleMethodSectionExit(methodState.shouldHide)
+      }, methodState.data, scoreState), () => {
+        this.scheduleMethodSectionExit(methodState.shouldHide)
+        this.updateScoreSectionTransition(modeState.showScoreSection, prevShowScore)
+      })
 
       this.checkCanSave()
     },
@@ -874,6 +941,7 @@ Component({
      */
     resetForm() {
       this.clearMethodExitTimer()
+      this.clearScoreTimers()
       const dateState = this.getDateTimeState(new Date())
       this.setData(Object.assign({}, dateState, {
         typeCounts: Object.assign({}, BASE_TYPE_COUNTS),
@@ -887,6 +955,9 @@ Component({
         totalScore: 0,
         scoreTypeList: [],
         showScoreSection: false,
+        renderScoreSection: false,
+        scoreSlotOpen: false,
+        scoreVisible: false,
         showScoreToggle: false,
         currentScore: 0,
         canSave: false,
@@ -1086,6 +1157,7 @@ Component({
 
     applyRecord(record) {
       this.clearMethodExitTimer()
+      this.clearScoreTimers()
       const typeCounts = this.normalizeTypeCounts(record)
       let typeScores = this.normalizeTypeScores(record)
       const scoreMode = this.normalizeScoreMode(record, typeScores)
@@ -1130,6 +1202,9 @@ Component({
         scoreMode: modeState.scoreMode,
         scoreModeManual: modeState.scoreModeManual,
         showScoreSection: modeState.showScoreSection,
+        renderScoreSection: modeState.showScoreSection,
+        scoreSlotOpen: modeState.showScoreSection,
+        scoreVisible: modeState.showScoreSection,
         showScoreToggle: modeState.showScoreToggle,
         currentScore,
         currentRecordId: recordId,

@@ -802,6 +802,37 @@
 
 
 /* ========== 评分系统 ========== */
+.score-shell {
+  overflow: hidden;
+  max-height: 0;
+  padding-bottom: 0;
+  transition:
+    max-height 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    padding-bottom 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.score-shell.is-open {
+  max-height: 2000rpx;
+  padding-bottom: 28rpx;
+}
+
+.score-section {
+  margin-bottom: 0;
+  opacity: 0;
+  transform: translateY(18rpx);
+  animation: none;
+  pointer-events: none;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.score-section.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
 .score-header .section-hint {
   margin-left: 0;
 }
