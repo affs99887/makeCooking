@@ -33,6 +33,7 @@ const TYPE_SCORE_MAX = 4000
 const SCORE_STEP = 100
 const SECTION_EXIT_DURATION = 360
 const SCORE_SLOT_DURATION = 620
+const SLOT_ENTER_DELAY = 280
 const SCORE_FADE_DURATION = 200
 const BASE_SPACER_HEIGHT = 160
 const MAX_MASK_BLUR = 20
@@ -107,6 +108,8 @@ Component({
     selectedMethod: '',     // 选中的烹饪手法
     showMethod: false,      // 是否显示手法选择
     renderMethodSection: false,
+    methodSlotOpen: false,
+    methodVisible: false,
     methodExiting: false,
     scoreMode: SCORE_MODE.total,
     scoreModeManual: false,
@@ -136,7 +139,7 @@ Component({
     detached() {
       this.clearOpenSettleTimer()
       this.clearClosingTimer()
-      this.clearMethodExitTimer()
+      this.clearMethodTimers()
       this.clearScoreTimers()
       console.log('[RecordDrawer] Component detached')
     }
@@ -254,10 +257,18 @@ Component({
       }
     },
 
-    clearMethodExitTimer() {
+    clearMethodTimers() {
+      if (this.methodEnterTimer) {
+        clearTimeout(this.methodEnterTimer)
+        this.methodEnterTimer = null
+      }
       if (this.methodExitTimer) {
         clearTimeout(this.methodExitTimer)
         this.methodExitTimer = null
+      }
+      if (this.methodRemoveTimer) {
+        clearTimeout(this.methodRemoveTimer)
+        this.methodRemoveTimer = null
       }
     },
 
@@ -276,17 +287,61 @@ Component({
       }
     },
 
-    scheduleMethodSectionExit(shouldHide) {
-      this.clearMethodExitTimer()
-      if (!shouldHide) {
+    updateMethodSectionTransition(shouldShow, prevShow) {
+      if (shouldShow === prevShow) {
         return
       }
+      this.clearMethodTimers()
+      if (shouldShow) {
+        this.setData({
+          renderMethodSection: true,
+          methodSlotOpen: false,
+          methodVisible: false,
+          methodExiting: false
+        })
+        wx.nextTick(() => {
+          if (!this.data.showMethod) {
+            return
+          }
+          this.setData({ methodSlotOpen: true })
+          this.methodEnterTimer = setTimeout(() => {
+            if (this.data.showMethod) {
+              this.setData({ methodVisible: true })
+            }
+          }, SLOT_ENTER_DELAY)
+        })
+        return
+      }
+
+      if (!this.data.renderMethodSection) {
+        return
+      }
+      if (!this.data.methodVisible) {
+        this.setData({
+          methodVisible: false,
+          methodExiting: false,
+          methodSlotOpen: false
+        })
+        this.methodRemoveTimer = setTimeout(() => {
+          if (!this.data.showMethod) {
+            this.setData({ renderMethodSection: false })
+          }
+        }, SCORE_SLOT_DURATION)
+        return
+      }
+      this.setData({ methodExiting: true })
       this.methodExitTimer = setTimeout(() => {
         if (!this.data.showMethod) {
           this.setData({
-            renderMethodSection: false,
-            methodExiting: false
+            methodVisible: false,
+            methodExiting: false,
+            methodSlotOpen: false
           })
+          this.methodRemoveTimer = setTimeout(() => {
+            if (!this.data.showMethod) {
+              this.setData({ renderMethodSection: false })
+            }
+          }, SCORE_SLOT_DURATION)
         }
       }, SECTION_EXIT_DURATION)
     },
@@ -311,7 +366,7 @@ Component({
             if (this.data.showScoreSection) {
               this.setData({ scoreVisible: true })
             }
-          }, SCORE_SLOT_DURATION)
+          }, SLOT_ENTER_DELAY)
         })
         return
       }
@@ -339,6 +394,7 @@ Component({
       this.initDrawerMetrics()
       this.clearOpenSettleTimer()
       this.clearClosingTimer()
+      this.clearMethodTimers()
       this.clearScoreTimers()
       const positions = this.getDrawerPositions()
       if (newVal) {
@@ -503,6 +559,7 @@ Component({
         selectedMethod = ''
       }
       const prevShowScore = this.data.showScoreSection
+      const prevShowMethod = this.data.showMethod
 
       const modeState = this.resolveScoreModeState(
         typeCounts,
@@ -522,19 +579,18 @@ Component({
         modeState.scoreMode,
         syncState.currentScore
       )
-      const methodState = this.getMethodSectionState(showMethod)
-
       this.setData(Object.assign({
         typeCounts,
         typeScores: syncState.typeScores,
+        showMethod,
         selectedMethod,
         currentScore: syncState.currentScore,
         scoreMode: modeState.scoreMode,
         scoreModeManual: modeState.scoreModeManual,
         showScoreSection: modeState.showScoreSection,
         showScoreToggle: modeState.showScoreToggle
-      }, methodState.data, scoreState), () => {
-        this.scheduleMethodSectionExit(methodState.shouldHide)
+      }, scoreState), () => {
+        this.updateMethodSectionTransition(showMethod, prevShowMethod)
         this.updateScoreSectionTransition(modeState.showScoreSection, prevShowScore)
       })
 
@@ -575,6 +631,7 @@ Component({
         selectedMethod = ''
       }
       const prevShowScore = this.data.showScoreSection
+      const prevShowMethod = this.data.showMethod
 
       const modeState = this.resolveScoreModeState(
         typeCounts,
@@ -594,19 +651,18 @@ Component({
         modeState.scoreMode,
         syncState.currentScore
       )
-      const methodState = this.getMethodSectionState(showMethod)
-
       this.setData(Object.assign({
         typeCounts,
         typeScores: syncState.typeScores,
+        showMethod,
         selectedMethod,
         currentScore: syncState.currentScore,
         scoreMode: modeState.scoreMode,
         scoreModeManual: modeState.scoreModeManual,
         showScoreSection: modeState.showScoreSection,
         showScoreToggle: modeState.showScoreToggle
-      }, methodState.data, scoreState), () => {
-        this.scheduleMethodSectionExit(methodState.shouldHide)
+      }, scoreState), () => {
+        this.updateMethodSectionTransition(showMethod, prevShowMethod)
         this.updateScoreSectionTransition(modeState.showScoreSection, prevShowScore)
       })
 
@@ -636,17 +692,32 @@ Component({
      * 切换评分模式（分开/总分）
      */
     onScoreModeToggle() {
+      const nextMode =
+        this.data.scoreMode === SCORE_MODE.total
+          ? SCORE_MODE.perType
+          : SCORE_MODE.total
+      this.setScoreMode(nextMode)
+    },
+
+    onScoreModeTab(e) {
+      const nextMode = e.currentTarget.dataset.mode
+      this.setScoreMode(nextMode)
+    },
+
+    setScoreMode(nextMode) {
       if (this.data.isReadonly) {
+        return
+      }
+      if (nextMode !== SCORE_MODE.total && nextMode !== SCORE_MODE.perType) {
+        return
+      }
+      if (nextMode === this.data.scoreMode) {
         return
       }
       const activeTypes = this.getActiveTypes(this.data.typeCounts)
       if (activeTypes.length <= 1) {
         return
       }
-      const nextMode =
-        this.data.scoreMode === SCORE_MODE.total
-          ? SCORE_MODE.perType
-          : SCORE_MODE.total
       const scoreState = this.getScoreState(
         this.data.typeCounts,
         this.data.typeScores,
@@ -816,37 +887,6 @@ Component({
       }
     },
 
-    getMethodSectionState(showMethod) {
-      if (showMethod) {
-        return {
-          data: {
-            showMethod: true,
-            renderMethodSection: true,
-            methodExiting: false
-          },
-          shouldHide: false
-        }
-      }
-      if (!this.data.renderMethodSection) {
-        return {
-          data: {
-            showMethod: false,
-            renderMethodSection: false,
-            methodExiting: false
-          },
-          shouldHide: false
-        }
-      }
-      return {
-        data: {
-          showMethod: false,
-          renderMethodSection: true,
-          methodExiting: true
-        },
-        shouldHide: true
-      }
-    },
-
     buildScoreTypeList(typeCounts, typeScores) {
       return TYPE_ORDER.reduce((list, key) => {
         const count = Number(typeCounts[key] || 0)
@@ -940,7 +980,7 @@ Component({
      * 重置表单
      */
     resetForm() {
-      this.clearMethodExitTimer()
+      this.clearMethodTimers()
       this.clearScoreTimers()
       const dateState = this.getDateTimeState(new Date())
       this.setData(Object.assign({}, dateState, {
@@ -949,6 +989,8 @@ Component({
         selectedMethod: '',
         showMethod: false,
         renderMethodSection: false,
+        methodSlotOpen: false,
+        methodVisible: false,
         methodExiting: false,
         scoreMode: SCORE_MODE.total,
         scoreModeManual: false,
@@ -1156,7 +1198,7 @@ Component({
     },
 
     applyRecord(record) {
-      this.clearMethodExitTimer()
+      this.clearMethodTimers()
       this.clearScoreTimers()
       const typeCounts = this.normalizeTypeCounts(record)
       let typeScores = this.normalizeTypeScores(record)
@@ -1197,6 +1239,8 @@ Component({
         typeScores,
         showMethod,
         renderMethodSection: showMethod,
+        methodSlotOpen: showMethod,
+        methodVisible: showMethod,
         methodExiting: false,
         selectedMethod,
         scoreMode: modeState.scoreMode,

@@ -150,42 +150,43 @@
 
 
       <!-- 烹饪手法选择（仅在选择Service时显示） -->
-      <view class="section-block method-section {{methodExiting || isClosing ? 'section-exit' : ''}}"
-            wx:if="{{renderMethodSection}}">
-        <view class="section-header">
-          <view class="section-icon"></view>
-          <text class="section-title">烹饪手法</text>
-          <text class="section-hint">单选</text>
-        </view>
-
-        <view class="method-list">
-          <view class="method-item {{selectedMethod === 'Lollipop' ? 'active' : ''}}"
-                bindtap="onMethodSelect"
-                data-method="Lollipop">
-            <view class="method-check"></view>
-            <view class="method-info">
-              <text class="method-label-cn">棒棒糖法</text>
-              <text class="method-label-en">Lollipop</text>
-            </view>
+      <view class="method-shell {{methodSlotOpen ? 'is-open' : ''}}" wx:if="{{renderMethodSection}}">
+        <view class="section-block method-section {{methodVisible ? 'is-visible' : ''}} {{methodExiting || isClosing ? 'section-exit' : ''}}">
+          <view class="section-header">
+            <view class="section-icon"></view>
+            <text class="section-title">烹饪手法</text>
+            <text class="section-hint">单选</text>
           </view>
 
-          <view class="method-item {{selectedMethod === 'Seafood' ? 'active' : ''}}"
-                bindtap="onMethodSelect"
-                data-method="Seafood">
-            <view class="method-check"></view>
-            <view class="method-info">
-              <text class="method-label-cn">海鲜法</text>
-              <text class="method-label-en">Seafood</text>
+          <view class="method-list">
+            <view class="method-item {{selectedMethod === 'Lollipop' ? 'active' : ''}}"
+                  bindtap="onMethodSelect"
+                  data-method="Lollipop">
+              <view class="method-check"></view>
+              <view class="method-info">
+                <text class="method-label-cn">棒棒糖法</text>
+                <text class="method-label-en">Lollipop</text>
+              </view>
             </view>
-          </view>
 
-          <view class="method-item {{selectedMethod === 'Both' ? 'active' : ''}}"
-                bindtap="onMethodSelect"
-                data-method="Both">
-            <view class="method-check"></view>
-            <view class="method-info">
-              <text class="method-label-cn">双拼法</text>
-              <text class="method-label-en">Both</text>
+            <view class="method-item {{selectedMethod === 'Seafood' ? 'active' : ''}}"
+                  bindtap="onMethodSelect"
+                  data-method="Seafood">
+              <view class="method-check"></view>
+              <view class="method-info">
+                <text class="method-label-cn">海鲜法</text>
+                <text class="method-label-en">Seafood</text>
+              </view>
+            </view>
+
+            <view class="method-item {{selectedMethod === 'Both' ? 'active' : ''}}"
+                  bindtap="onMethodSelect"
+                  data-method="Both">
+              <view class="method-check"></view>
+              <view class="method-info">
+                <text class="method-label-cn">双拼法</text>
+                <text class="method-label-en">Both</text>
+              </view>
             </view>
           </view>
         </view>
@@ -198,69 +199,27 @@
           <view class="section-icon"></view>
           <text class="section-title">满意度评分</text>
           <view class="score-header-actions">
-            <text class="section-hint">{{scoreMode === 'total' ? '总分' : '分开打分'}}</text>
-            <button class="score-toggle"
-                    wx:if="{{!isReadonly && showScoreToggle}}"
-                    bindtap="onScoreModeToggle"
-                    hover-class="score-toggle-hover">
-              {{scoreMode === 'total' ? '分开打分' : '只打总分'}}
-            </button>
-          </view>
-        </view>
-
-        <view class="score-total-card" wx:if="{{scoreMode === 'perType'}}">
-          <text class="score-total-label">总分</text>
-          <view class="score-total-display">
-            <text class="score-total-value">{{totalScore}}</text>
-            <text class="score-total-unit">分</text>
-          </view>
-        </view>
-
-        <view class="score-type-list" wx:if="{{scoreMode === 'perType'}}">
-          <block wx:for="{{scoreTypeList}}" wx:key="key">
-            <view class="score-type-item">
-              <view class="score-type-header">
-                <text class="score-type-name">{{item.label}}</text>
-                <text class="score-type-count" wx:if="{{item.count > 1}}">x{{item.count}}</text>
-                <view class="score-type-score">
-                  <text class="score-type-number">{{item.score}}</text>
-                  <text class="score-type-max">/ {{typeScoreMax}}</text>
-                </view>
+            <view class="score-mode-tabs" wx:if="{{showScoreToggle && !isReadonly}}">
+              <view class="score-mode-indicator"
+                    style="transform: translateX({{scoreMode === 'total' ? '0' : '100%'}});"></view>
+              <view class="score-mode-tab {{scoreMode === 'total' ? 'active' : ''}}"
+                    bindtap="onScoreModeTab"
+                    data-mode="total">
+                <text class="score-mode-tab-label">总分</text>
               </view>
-
-              <view class="slider-container score-type-slider">
-                <view class="slider-rail"></view>
-                <view class="slider-fill" style="width: calc((100% - 32rpx) * {{item.score / typeScoreMax}});"></view>
-                <view class="slider-glow" style="width: calc((100% - 32rpx) * {{item.score / typeScoreMax}});"></view>
-                <slider
-                  class="score-slider"
-                  min="0"
-                  max="{{typeScoreMax}}"
-                  step="{{scoreStep}}"
-                  value="{{item.score}}"
-                  disabled="{{isReadonly}}"
-                  activeColor="rgba(0, 0, 0, 0)"
-                  backgroundColor="rgba(0, 0, 0, 0)"
-                  block-color="#ffffff"
-                  block-size="32"
-                  data-type="{{item.key}}"
-                  bindchange="onTypeScoreChange"
-                  bindchanging="onTypeScoreChanging"
-                />
-              </view>
-
-              <view class="score-markers score-type-markers">
-                <text class="marker">0</text>
-                <text class="marker">1000</text>
-                <text class="marker">2000</text>
-                <text class="marker">3000</text>
-                <text class="marker">4000</text>
+              <view class="score-mode-tab {{scoreMode === 'perType' ? 'active' : ''}}"
+                    bindtap="onScoreModeTab"
+                    data-mode="perType">
+                <text class="score-mode-tab-label">分项</text>
               </view>
             </view>
-          </block>
+            <text class="score-mode-static" wx:if="{{!showScoreToggle || isReadonly}}">
+              {{scoreMode === 'total' ? '总分' : '分项'}}
+            </text>
+          </view>
         </view>
 
-        <view wx:if="{{scoreMode === 'total'}}">
+        <view class="score-mode-panel score-mode-total {{scoreMode === 'total' ? 'is-active' : ''}}">
           <view class="score-display">
             <text class="score-value {{scoreAnimClass}}">{{currentScore}}</text>
             <text class="score-unit">分</text>
@@ -277,7 +236,7 @@
               max="{{totalScoreMax}}"
               step="{{scoreStep}}"
               value="{{currentScore}}"
-              disabled="{{isReadonly}}"
+              disabled="{{isReadonly || scoreMode !== 'total'}}"
               activeColor="rgba(0, 0, 0, 0)"
               backgroundColor="rgba(0, 0, 0, 0)"
               block-color="#ffffff"
@@ -293,6 +252,60 @@
             <text class="marker">2000</text>
             <text class="marker">3000</text>
             <text class="marker">{{totalScoreMax}}</text>
+          </view>
+        </view>
+
+        <view class="score-mode-panel score-mode-per-type {{scoreMode === 'perType' ? 'is-active' : ''}}">
+          <view class="score-total-card">
+            <text class="score-total-label">总分</text>
+            <view class="score-total-display">
+              <text class="score-total-value">{{totalScore}}</text>
+              <text class="score-total-unit">分</text>
+            </view>
+          </view>
+
+          <view class="score-type-list">
+            <block wx:for="{{scoreTypeList}}" wx:key="key">
+              <view class="score-type-item">
+                <view class="score-type-header">
+                  <text class="score-type-name">{{item.label}}</text>
+                  <text class="score-type-count" wx:if="{{item.count > 1}}">x{{item.count}}</text>
+                  <view class="score-type-score">
+                    <text class="score-type-number">{{item.score}}</text>
+                    <text class="score-type-max">/ {{typeScoreMax}}</text>
+                  </view>
+                </view>
+
+                <view class="slider-container score-type-slider">
+                  <view class="slider-rail"></view>
+                  <view class="slider-fill" style="width: calc((100% - 32rpx) * {{item.score / typeScoreMax}});"></view>
+                  <view class="slider-glow" style="width: calc((100% - 32rpx) * {{item.score / typeScoreMax}});"></view>
+                  <slider
+                    class="score-slider"
+                    min="0"
+                    max="{{typeScoreMax}}"
+                    step="{{scoreStep}}"
+                    value="{{item.score}}"
+                    disabled="{{isReadonly || scoreMode !== 'perType'}}"
+                    activeColor="rgba(0, 0, 0, 0)"
+                    backgroundColor="rgba(0, 0, 0, 0)"
+                    block-color="#ffffff"
+                    block-size="32"
+                    data-type="{{item.key}}"
+                    bindchange="onTypeScoreChange"
+                    bindchanging="onTypeScoreChanging"
+                  />
+                </view>
+
+                <view class="score-markers score-type-markers">
+                  <text class="marker">0</text>
+                  <text class="marker">1000</text>
+                  <text class="marker">2000</text>
+                  <text class="marker">3000</text>
+                  <text class="marker">4000</text>
+                </view>
+              </view>
+            </block>
           </view>
         </view>
         </view>
