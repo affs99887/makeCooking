@@ -240,6 +240,8 @@ Page({
       typeCounts: recordData.typeCounts || {},
       method: recordData.method || '',
       score: recordData.score || 0,
+      scoreMode: recordData.scoreMode || 'total',
+      typeScores: recordData.typeScores || {},
       timestamp: recordData.timestamp,
       date: recordData.date,
       time: recordData.time || '',

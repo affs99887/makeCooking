@@ -7,6 +7,30 @@ const BASE_TYPE_COUNTS = {
   reverse: 0,
   suck: 0
 }
+const BASE_TYPE_SCORES = {
+  standard: 0,
+  service: 0,
+  backin: 0,
+  lite: 0,
+  reverse: 0,
+  suck: 0
+}
+const TYPE_LABELS = {
+  standard: '标准',
+  service: '服务',
+  backin: '回味',
+  lite: '清淡',
+  reverse: '反转',
+  suck: '萨克'
+}
+const TYPE_ORDER = ['standard', 'service', 'backin', 'lite', 'reverse', 'suck']
+const SCORE_MODE = {
+  total: 'total',
+  perType: 'perType'
+}
+const TOTAL_SCORE_MAX = 4100
+const TYPE_SCORE_MAX = 4000
+const SCORE_STEP = 100
 const BASE_SPACER_HEIGHT = 160
 const MAX_MASK_BLUR = 20
 const DEFAULT_DATE_LABEL = '刚刚烹饪完毕'
@@ -78,7 +102,15 @@ Component({
     typeCounts: Object.assign({}, BASE_TYPE_COUNTS), // 叠加次数
     selectedMethod: '',     // 选中的烹饪手法
     showMethod: false,      // 是否显示手法选择
-    currentScore: 0,         // 当前评分
+    scoreMode: SCORE_MODE.perType,
+    typeScores: Object.assign({}, BASE_TYPE_SCORES),
+    totalScore: 0,
+    scoreTypeList: [],
+    showScoreSection: false,
+    totalScoreMax: TOTAL_SCORE_MAX,
+    typeScoreMax: TYPE_SCORE_MAX,
+    scoreStep: SCORE_STEP,
+    currentScore: 0,         // 当前评分（总分模式）
     canSave: false           // 是否可以保存
   },
 
@@ -346,6 +378,7 @@ Component({
       }
       const type = e.currentTarget.dataset.type
       const typeCounts = Object.assign({}, this.data.typeCounts)
+      const typeScores = Object.assign({}, this.data.typeScores)
 
       if (!Object.prototype.hasOwnProperty.call(typeCounts, type)) {
         return
@@ -362,11 +395,19 @@ Component({
         selectedMethod = ''
       }
 
-      this.setData({
+      const scoreState = this.getScoreState(
         typeCounts,
+        typeScores,
+        this.data.scoreMode,
+        this.data.currentScore
+      )
+
+      this.setData(Object.assign({
+        typeCounts,
+        typeScores,
         showMethod,
         selectedMethod
-      })
+      }, scoreState))
 
       this.checkCanSave()
     },
@@ -380,6 +421,7 @@ Component({
       }
       const type = e.currentTarget.dataset.type
       const typeCounts = Object.assign({}, this.data.typeCounts)
+      const typeScores = Object.assign({}, this.data.typeScores)
 
       if (!Object.prototype.hasOwnProperty.call(typeCounts, type)) {
         return
@@ -393,6 +435,10 @@ Component({
       wx.vibrateShort({ type: 'light' })
 
       typeCounts[type] -= 1
+      if (typeCounts[type] <= 0) {
+        typeCounts[type] = 0
+        typeScores[type] = 0
+      }
 
       const showMethod = typeCounts.suck > 0
       let { selectedMethod } = this.data
@@ -400,11 +446,19 @@ Component({
         selectedMethod = ''
       }
 
-      this.setData({
+      const scoreState = this.getScoreState(
         typeCounts,
+        typeScores,
+        this.data.scoreMode,
+        this.data.currentScore
+      )
+
+      this.setData(Object.assign({
+        typeCounts,
+        typeScores,
         showMethod,
         selectedMethod
-      })
+      }, scoreState))
 
       this.checkCanSave()
     },
@@ -429,41 +483,166 @@ Component({
     },
 
     /**
-     * 评分滑块变化中
+     * 切换评分模式（分开/总分）
      */
-    onScoreChanging(e) {
+    onScoreModeToggle() {
       if (this.data.isReadonly) {
         return
       }
+      const nextMode =
+        this.data.scoreMode === SCORE_MODE.total
+          ? SCORE_MODE.perType
+          : SCORE_MODE.total
+      const scoreState = this.getScoreState(
+        this.data.typeCounts,
+        this.data.typeScores,
+        nextMode,
+        this.data.currentScore
+      )
+
+      this.setData(Object.assign({
+        scoreMode: nextMode
+      }, scoreState))
+
+      this.checkCanSave()
+    },
+
+    /**
+     * 评分滑块变化中（总分）
+     */
+    onScoreChanging(e) {
+      if (this.data.isReadonly || this.data.scoreMode !== SCORE_MODE.total) {
+        return
+      }
+      const currentScore = Number(e.detail.value || 0)
       this.setData({
-        currentScore: e.detail.value
+        currentScore,
+        totalScore: currentScore
       })
     },
 
     /**
-     * 评分滑块变化完成
+     * 评分滑块变化完成（总分）
      */
     onScoreChange(e) {
-      if (this.data.isReadonly) {
+      if (this.data.isReadonly || this.data.scoreMode !== SCORE_MODE.total) {
         return
       }
-      const score = e.detail.value
+      const score = Number(e.detail.value || 0)
 
       // 触觉反馈
       wx.vibrateShort({ type: 'light' })
 
       this.setData({
-        currentScore: score
+        currentScore: score,
+        totalScore: score
       })
 
       this.checkCanSave()
     },
 
     /**
+     * 评分滑块变化中（分项）
+     */
+    onTypeScoreChanging(e) {
+      if (this.data.isReadonly || this.data.scoreMode !== SCORE_MODE.perType) {
+        return
+      }
+      const type = e.currentTarget.dataset.type
+      if (!type) {
+        return
+      }
+      const score = Number(e.detail.value || 0)
+      const typeScores = Object.assign({}, this.data.typeScores, {
+        [type]: score
+      })
+      const totalScore = this.computePerTypeTotal(this.data.typeCounts, typeScores)
+      const scoreTypeList = this.buildScoreTypeList(this.data.typeCounts, typeScores)
+
+      this.setData({
+        typeScores,
+        totalScore,
+        scoreTypeList
+      })
+    },
+
+    /**
+     * 评分滑块变化完成（分项）
+     */
+    onTypeScoreChange(e) {
+      if (this.data.isReadonly || this.data.scoreMode !== SCORE_MODE.perType) {
+        return
+      }
+      const type = e.currentTarget.dataset.type
+      if (!type) {
+        return
+      }
+      const score = Number(e.detail.value || 0)
+
+      // 触觉反馈
+      wx.vibrateShort({ type: 'light' })
+
+      const typeScores = Object.assign({}, this.data.typeScores, {
+        [type]: score
+      })
+      const totalScore = this.computePerTypeTotal(this.data.typeCounts, typeScores)
+      const scoreTypeList = this.buildScoreTypeList(this.data.typeCounts, typeScores)
+
+      this.setData({
+        typeScores,
+        totalScore,
+        scoreTypeList
+      })
+
+      this.checkCanSave()
+    },
+
+    hasSelectedType(typeCounts) {
+      return Object.keys(typeCounts).some(key => typeCounts[key] > 0)
+    },
+
+    buildScoreTypeList(typeCounts, typeScores) {
+      return TYPE_ORDER.reduce((list, key) => {
+        const count = Number(typeCounts[key] || 0)
+        if (count > 0) {
+          list.push({
+            key,
+            label: TYPE_LABELS[key] || key,
+            count,
+            score: Number(typeScores[key] || 0)
+          })
+        }
+        return list
+      }, [])
+    },
+
+    computePerTypeTotal(typeCounts, typeScores) {
+      return TYPE_ORDER.reduce((total, key) => {
+        if (typeCounts[key] > 0) {
+          return total + Number(typeScores[key] || 0)
+        }
+        return total
+      }, 0)
+    },
+
+    getScoreState(typeCounts, typeScores, scoreMode, currentScore) {
+      const showScoreSection = this.hasSelectedType(typeCounts)
+      const scoreTypeList = this.buildScoreTypeList(typeCounts, typeScores)
+      const totalScore = scoreMode === SCORE_MODE.total
+        ? Number(currentScore || 0)
+        : this.computePerTypeTotal(typeCounts, typeScores)
+      return {
+        showScoreSection,
+        scoreTypeList,
+        totalScore
+      }
+    },
+
+    /**
      * 检查是否可以保存
      */
     checkCanSave() {
-      const { typeCounts, selectedMethod, currentScore } = this.data
+      const { typeCounts, selectedMethod, totalScore } = this.data
 
       // 至少选择一种风格
       const hasType = Object.keys(typeCounts).some(key => typeCounts[key] > 0)
@@ -472,7 +651,7 @@ Component({
       const hasMethod = typeCounts.suck > 0 ? selectedMethod !== '' : true
 
       // 评分大于0
-      const hasScore = currentScore > 0
+      const hasScore = totalScore > 0
 
       const canSave = hasType && hasMethod && hasScore
 
@@ -520,8 +699,13 @@ Component({
       const dateState = this.getDateTimeState(new Date())
       this.setData(Object.assign({}, dateState, {
         typeCounts: Object.assign({}, BASE_TYPE_COUNTS),
+        typeScores: Object.assign({}, BASE_TYPE_SCORES),
         selectedMethod: '',
         showMethod: false,
+        scoreMode: SCORE_MODE.perType,
+        totalScore: 0,
+        scoreTypeList: [],
+        showScoreSection: false,
         currentScore: 0,
         canSave: false,
         currentRecordId: '',
@@ -720,6 +904,8 @@ Component({
 
     applyRecord(record) {
       const typeCounts = this.normalizeTypeCounts(record)
+      const typeScores = this.normalizeTypeScores(record)
+      const scoreMode = this.normalizeScoreMode(record, typeScores)
       const showMethod = typeCounts.suck > 0
       let selectedMethod = record.method || ''
       if (!showMethod) {
@@ -728,15 +914,23 @@ Component({
       const score = Number(record.score || 0)
       const recordId = record._id || record.id || ''
       const dateState = this.getDateTimeState(this.resolveRecordDate(record))
+      const scoreState = this.getScoreState(
+        typeCounts,
+        typeScores,
+        scoreMode,
+        score
+      )
 
       this.setData(Object.assign({
         typeCounts,
+        typeScores,
         showMethod,
         selectedMethod,
+        scoreMode,
         currentScore: score,
         currentRecordId: recordId,
         showDateEditor: false
-      }, dateState))
+      }, scoreState, dateState))
 
       this.checkCanSave()
     },
@@ -755,6 +949,26 @@ Component({
       return counts
     },
 
+    normalizeTypeScores(record) {
+      if (record.typeScores && typeof record.typeScores === 'object') {
+        const scores = Object.assign({}, BASE_TYPE_SCORES, record.typeScores)
+        TYPE_ORDER.forEach(key => {
+          scores[key] = Number(scores[key] || 0)
+        })
+        return scores
+      }
+      return Object.assign({}, BASE_TYPE_SCORES)
+    },
+
+    normalizeScoreMode(record, typeScores) {
+      const mode = record && record.scoreMode
+      if (mode === SCORE_MODE.total || mode === SCORE_MODE.perType) {
+        return mode
+      }
+      const hasScores = TYPE_ORDER.some(key => Number(typeScores[key] || 0) > 0)
+      return hasScores ? SCORE_MODE.perType : SCORE_MODE.total
+    },
+
     buildRecordData(includeId) {
       const typeCounts = Object.assign({}, this.data.typeCounts)
       const types = Object.keys(typeCounts).filter(key => typeCounts[key] > 0)
@@ -763,11 +977,17 @@ Component({
       const timestamp = baseDate.getTime()
       const date = this.formatDate(baseDate)
       const time = this.data.selectedTime || this.formatTime(baseDate)
+      const scoreMode = this.data.scoreMode
+      const totalScore = scoreMode === SCORE_MODE.total
+        ? this.data.currentScore
+        : this.computePerTypeTotal(typeCounts, this.data.typeScores)
       const recordData = {
         types,
         typeCounts,
         method: this.data.selectedMethod,
-        score: this.data.currentScore,
+        score: totalScore,
+        scoreMode,
+        typeScores: Object.assign({}, this.data.typeScores),
         timestamp,
         date,
         time
