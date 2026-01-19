@@ -31,6 +31,7 @@ const SCORE_MODE = {
 const TOTAL_SCORE_MAX = 4100
 const TYPE_SCORE_MAX = 4000
 const SCORE_STEP = 100
+const SECTION_EXIT_DURATION = 360
 const BASE_SPACER_HEIGHT = 160
 const MAX_MASK_BLUR = 20
 const DEFAULT_DATE_LABEL = '刚刚烹饪完毕'
@@ -81,6 +82,7 @@ Component({
     isOpen: false,
     isDragging: false,
     isExpanded: false,
+    isClosing: false,
     currentMode: 'create',
     isReadonly: false,
     drawerTitle: MODE_CONFIG.create.title,
@@ -102,11 +104,15 @@ Component({
     typeCounts: Object.assign({}, BASE_TYPE_COUNTS), // 叠加次数
     selectedMethod: '',     // 选中的烹饪手法
     showMethod: false,      // 是否显示手法选择
-    scoreMode: SCORE_MODE.perType,
+    renderMethodSection: false,
+    methodExiting: false,
+    scoreMode: SCORE_MODE.total,
+    scoreModeManual: false,
     typeScores: Object.assign({}, BASE_TYPE_SCORES),
     totalScore: 0,
     scoreTypeList: [],
     showScoreSection: false,
+    showScoreToggle: false,
     totalScoreMax: TOTAL_SCORE_MAX,
     typeScoreMax: TYPE_SCORE_MAX,
     scoreStep: SCORE_STEP,
@@ -124,6 +130,8 @@ Component({
 
     detached() {
       this.clearOpenSettleTimer()
+      this.clearClosingTimer()
+      this.clearMethodExitTimer()
       console.log('[RecordDrawer] Component detached')
     }
   },
@@ -233,14 +241,45 @@ Component({
       }
     },
 
+    clearClosingTimer() {
+      if (this.closingTimer) {
+        clearTimeout(this.closingTimer)
+        this.closingTimer = null
+      }
+    },
+
+    clearMethodExitTimer() {
+      if (this.methodExitTimer) {
+        clearTimeout(this.methodExitTimer)
+        this.methodExitTimer = null
+      }
+    },
+
+    scheduleMethodSectionExit(shouldHide) {
+      this.clearMethodExitTimer()
+      if (!shouldHide) {
+        return
+      }
+      this.methodExitTimer = setTimeout(() => {
+        if (!this.data.showMethod) {
+          this.setData({
+            renderMethodSection: false,
+            methodExiting: false
+          })
+        }
+      }, SECTION_EXIT_DURATION)
+    },
+
     /**
      * 监听visible变化
      */
     onVisibleChange(newVal, oldVal) {
       this.initDrawerMetrics()
       this.clearOpenSettleTimer()
+      this.clearClosingTimer()
       const positions = this.getDrawerPositions()
       if (newVal) {
+        this.setData({ isClosing: false })
         this.setDrawerTranslate(positions.closed, {
           isAnimating: true,
           isOpen: false,
@@ -264,6 +303,12 @@ Component({
         // 触觉反馈
         wx.vibrateShort({ type: 'light' })
       } else {
+        this.setData({ isClosing: true })
+        this.closingTimer = setTimeout(() => {
+          if (!this.properties.visible) {
+            this.setData({ isClosing: false })
+          }
+        }, SECTION_EXIT_DURATION)
         this.setDrawerTranslate(positions.closed, {
           isOpen: false,
           isDragging: false,
@@ -395,19 +440,38 @@ Component({
         selectedMethod = ''
       }
 
+      const modeState = this.resolveScoreModeState(
+        typeCounts,
+        this.data.scoreMode,
+        this.data.scoreModeManual
+      )
+      const syncState = this.syncSingleTypeScore(
+        modeState.activeTypes,
+        typeScores,
+        this.data.currentScore,
+        modeState.scoreMode,
+        this.data.scoreMode
+      )
       const scoreState = this.getScoreState(
         typeCounts,
-        typeScores,
-        this.data.scoreMode,
-        this.data.currentScore
+        syncState.typeScores,
+        modeState.scoreMode,
+        syncState.currentScore
       )
+      const methodState = this.getMethodSectionState(showMethod)
 
       this.setData(Object.assign({
         typeCounts,
-        typeScores,
-        showMethod,
-        selectedMethod
-      }, scoreState))
+        typeScores: syncState.typeScores,
+        selectedMethod,
+        currentScore: syncState.currentScore,
+        scoreMode: modeState.scoreMode,
+        scoreModeManual: modeState.scoreModeManual,
+        showScoreSection: modeState.showScoreSection,
+        showScoreToggle: modeState.showScoreToggle
+      }, methodState.data, scoreState))
+
+      this.scheduleMethodSectionExit(methodState.shouldHide)
 
       this.checkCanSave()
     },
@@ -446,19 +510,38 @@ Component({
         selectedMethod = ''
       }
 
+      const modeState = this.resolveScoreModeState(
+        typeCounts,
+        this.data.scoreMode,
+        this.data.scoreModeManual
+      )
+      const syncState = this.syncSingleTypeScore(
+        modeState.activeTypes,
+        typeScores,
+        this.data.currentScore,
+        modeState.scoreMode,
+        this.data.scoreMode
+      )
       const scoreState = this.getScoreState(
         typeCounts,
-        typeScores,
-        this.data.scoreMode,
-        this.data.currentScore
+        syncState.typeScores,
+        modeState.scoreMode,
+        syncState.currentScore
       )
+      const methodState = this.getMethodSectionState(showMethod)
 
       this.setData(Object.assign({
         typeCounts,
-        typeScores,
-        showMethod,
-        selectedMethod
-      }, scoreState))
+        typeScores: syncState.typeScores,
+        selectedMethod,
+        currentScore: syncState.currentScore,
+        scoreMode: modeState.scoreMode,
+        scoreModeManual: modeState.scoreModeManual,
+        showScoreSection: modeState.showScoreSection,
+        showScoreToggle: modeState.showScoreToggle
+      }, methodState.data, scoreState))
+
+      this.scheduleMethodSectionExit(methodState.shouldHide)
 
       this.checkCanSave()
     },
@@ -489,6 +572,10 @@ Component({
       if (this.data.isReadonly) {
         return
       }
+      const activeTypes = this.getActiveTypes(this.data.typeCounts)
+      if (activeTypes.length <= 1) {
+        return
+      }
       const nextMode =
         this.data.scoreMode === SCORE_MODE.total
           ? SCORE_MODE.perType
@@ -501,7 +588,10 @@ Component({
       )
 
       this.setData(Object.assign({
-        scoreMode: nextMode
+        scoreMode: nextMode,
+        scoreModeManual: true,
+        showScoreSection: true,
+        showScoreToggle: true
       }, scoreState))
 
       this.checkCanSave()
@@ -515,10 +605,20 @@ Component({
         return
       }
       const currentScore = Number(e.detail.value || 0)
-      this.setData({
+      const activeTypes = this.getActiveTypes(this.data.typeCounts)
+      const nextData = {
         currentScore,
         totalScore: currentScore
-      })
+      }
+      if (activeTypes.length === 1) {
+        const type = activeTypes[0]
+        const typeScores = Object.assign({}, this.data.typeScores, {
+          [type]: currentScore
+        })
+        nextData.typeScores = typeScores
+        nextData.scoreTypeList = this.buildScoreTypeList(this.data.typeCounts, typeScores)
+      }
+      this.setData(nextData)
     },
 
     /**
@@ -533,10 +633,20 @@ Component({
       // 触觉反馈
       wx.vibrateShort({ type: 'light' })
 
-      this.setData({
+      const activeTypes = this.getActiveTypes(this.data.typeCounts)
+      const nextData = {
         currentScore: score,
         totalScore: score
-      })
+      }
+      if (activeTypes.length === 1) {
+        const type = activeTypes[0]
+        const typeScores = Object.assign({}, this.data.typeScores, {
+          [type]: score
+        })
+        nextData.typeScores = typeScores
+        nextData.scoreTypeList = this.buildScoreTypeList(this.data.typeCounts, typeScores)
+      }
+      this.setData(nextData)
 
       this.checkCanSave()
     },
@@ -597,8 +707,77 @@ Component({
       this.checkCanSave()
     },
 
-    hasSelectedType(typeCounts) {
-      return Object.keys(typeCounts).some(key => typeCounts[key] > 0)
+    getActiveTypes(typeCounts) {
+      return TYPE_ORDER.filter(key => Number(typeCounts[key] || 0) > 0)
+    },
+
+    resolveScoreModeState(typeCounts, scoreMode, scoreModeManual) {
+      const activeTypes = this.getActiveTypes(typeCounts)
+      let nextMode = scoreMode
+      let manual = scoreModeManual
+      if (activeTypes.length <= 1) {
+        nextMode = SCORE_MODE.total
+        manual = false
+      } else if (!scoreModeManual) {
+        nextMode = SCORE_MODE.perType
+      }
+      return {
+        activeTypes,
+        scoreMode: nextMode,
+        scoreModeManual: manual,
+        showScoreSection: activeTypes.length > 0,
+        showScoreToggle: activeTypes.length > 1
+      }
+    },
+
+    syncSingleTypeScore(activeTypes, typeScores, currentScore, scoreMode, prevScoreMode) {
+      if (activeTypes.length !== 1) {
+        return { typeScores, currentScore }
+      }
+      const type = activeTypes[0]
+      let nextScore = Number(currentScore || 0)
+      const nextTypeScores = Object.assign({}, typeScores)
+      if (scoreMode === SCORE_MODE.total) {
+        if (prevScoreMode === SCORE_MODE.perType) {
+          nextScore = Number(nextTypeScores[type] || 0)
+        }
+        nextTypeScores[type] = nextScore
+      }
+      return {
+        typeScores: nextTypeScores,
+        currentScore: nextScore
+      }
+    },
+
+    getMethodSectionState(showMethod) {
+      if (showMethod) {
+        return {
+          data: {
+            showMethod: true,
+            renderMethodSection: true,
+            methodExiting: false
+          },
+          shouldHide: false
+        }
+      }
+      if (!this.data.renderMethodSection) {
+        return {
+          data: {
+            showMethod: false,
+            renderMethodSection: false,
+            methodExiting: false
+          },
+          shouldHide: false
+        }
+      }
+      return {
+        data: {
+          showMethod: false,
+          renderMethodSection: true,
+          methodExiting: true
+        },
+        shouldHide: true
+      }
     },
 
     buildScoreTypeList(typeCounts, typeScores) {
@@ -626,13 +805,11 @@ Component({
     },
 
     getScoreState(typeCounts, typeScores, scoreMode, currentScore) {
-      const showScoreSection = this.hasSelectedType(typeCounts)
       const scoreTypeList = this.buildScoreTypeList(typeCounts, typeScores)
       const totalScore = scoreMode === SCORE_MODE.total
         ? Number(currentScore || 0)
         : this.computePerTypeTotal(typeCounts, typeScores)
       return {
-        showScoreSection,
         scoreTypeList,
         totalScore
       }
@@ -696,16 +873,21 @@ Component({
      * 重置表单
      */
     resetForm() {
+      this.clearMethodExitTimer()
       const dateState = this.getDateTimeState(new Date())
       this.setData(Object.assign({}, dateState, {
         typeCounts: Object.assign({}, BASE_TYPE_COUNTS),
         typeScores: Object.assign({}, BASE_TYPE_SCORES),
         selectedMethod: '',
         showMethod: false,
-        scoreMode: SCORE_MODE.perType,
+        renderMethodSection: false,
+        methodExiting: false,
+        scoreMode: SCORE_MODE.total,
+        scoreModeManual: false,
         totalScore: 0,
         scoreTypeList: [],
         showScoreSection: false,
+        showScoreToggle: false,
         currentScore: 0,
         canSave: false,
         currentRecordId: '',
@@ -903,8 +1085,9 @@ Component({
     },
 
     applyRecord(record) {
+      this.clearMethodExitTimer()
       const typeCounts = this.normalizeTypeCounts(record)
-      const typeScores = this.normalizeTypeScores(record)
+      let typeScores = this.normalizeTypeScores(record)
       const scoreMode = this.normalizeScoreMode(record, typeScores)
       const showMethod = typeCounts.suck > 0
       let selectedMethod = record.method || ''
@@ -914,20 +1097,41 @@ Component({
       const score = Number(record.score || 0)
       const recordId = record._id || record.id || ''
       const dateState = this.getDateTimeState(this.resolveRecordDate(record))
+      const activeTypes = this.getActiveTypes(typeCounts)
+      const scoreModeManual = activeTypes.length > 1 && scoreMode === SCORE_MODE.total
+      const modeState = this.resolveScoreModeState(
+        typeCounts,
+        scoreMode,
+        scoreModeManual
+      )
+      let currentScore = score
+      if (modeState.activeTypes.length === 1 && modeState.scoreMode === SCORE_MODE.total) {
+        const singleType = modeState.activeTypes[0]
+        const singleScore = Number(typeScores[singleType] || score || 0)
+        typeScores = Object.assign({}, typeScores, {
+          [singleType]: singleScore
+        })
+        currentScore = singleScore
+      }
       const scoreState = this.getScoreState(
         typeCounts,
         typeScores,
-        scoreMode,
-        score
+        modeState.scoreMode,
+        currentScore
       )
 
       this.setData(Object.assign({
         typeCounts,
         typeScores,
         showMethod,
+        renderMethodSection: showMethod,
+        methodExiting: false,
         selectedMethod,
-        scoreMode,
-        currentScore: score,
+        scoreMode: modeState.scoreMode,
+        scoreModeManual: modeState.scoreModeManual,
+        showScoreSection: modeState.showScoreSection,
+        showScoreToggle: modeState.showScoreToggle,
+        currentScore,
         currentRecordId: recordId,
         showDateEditor: false
       }, scoreState, dateState))

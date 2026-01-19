@@ -335,6 +335,23 @@
   }
 }
 
+.section-block.section-exit {
+  animation: section-exit 0.36s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  animation-delay: 0s;
+  pointer-events: none;
+}
+
+@keyframes section-exit {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(18rpx);
+  }
+}
+
 .section-header {
   display: flex;
   align-items: center;
@@ -564,31 +581,6 @@
 }
 
 /* ========== 烹饪手法选择 ========== */
-.method-section {
-  overflow: hidden;
-  max-height: 0;
-  opacity: 0;
-  margin-bottom: 0;
-  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-.method-section.show {
-  max-height: 420rpx;
-  opacity: 1;
-  margin-bottom: 28rpx;
-  animation: method-slide-in 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s backwards;
-}
-
-@keyframes method-slide-in {
-  from {
-    transform: translateX(-16rpx);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
 
 .method-list {
   display: flex;

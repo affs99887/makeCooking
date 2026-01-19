@@ -39,7 +39,7 @@
     <scroll-view class="drawer-content" scroll-y>
 
       <!-- 烹饪风格选择 -->
-      <view class="section-block type-section">
+      <view class="section-block type-section {{isClosing ? 'section-exit' : ''}}">
         <view class="section-header type-header">
           <view class="section-icon"></view>
           <text class="section-title">烹饪风格</text>
@@ -150,7 +150,8 @@
 
 
       <!-- 烹饪手法选择（仅在选择Service时显示） -->
-      <view class="section-block method-section {{showMethod ? 'show' : ''}}" wx:if="{{showMethod}}">
+      <view class="section-block method-section {{methodExiting || isClosing ? 'section-exit' : ''}}"
+            wx:if="{{renderMethodSection}}">
         <view class="section-header">
           <view class="section-icon"></view>
           <text class="section-title">烹饪手法</text>
@@ -198,7 +199,7 @@
           <view class="score-header-actions">
             <text class="section-hint">{{scoreMode === 'total' ? '总分' : '分开打分'}}</text>
             <button class="score-toggle"
-                    wx:if="{{!isReadonly}}"
+                    wx:if="{{!isReadonly && showScoreToggle}}"
                     bindtap="onScoreModeToggle"
                     hover-class="score-toggle-hover">
               {{scoreMode === 'total' ? '分开打分' : '只打总分'}}
