@@ -213,9 +213,9 @@
                 <text class="score-mode-tab-label">分项</text>
               </view>
             </view>
-            <text class="score-mode-static" wx:if="{{!showScoreToggle || isReadonly}}">
-              {{scoreMode === 'total' ? '总分' : '分项'}}
-            </text>
+            <view class="score-mode-static" wx:if="{{!showScoreToggle || isReadonly}}">
+              <text class="score-mode-static-label">{{scoreMode === 'total' ? '总分' : '分项'}}</text>
+            </view>
           </view>
         </view>
 
