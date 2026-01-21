@@ -891,14 +891,12 @@
   position: relative;
   display: flex;
   align-items: center;
-  padding: 6rpx;
+  padding: 4rpx;
   border-radius: 999rpx;
-  background: rgba(255, 255, 255, 0.8);
-  border: 1rpx solid rgba(184, 169, 211, 0.28);
-  box-shadow:
-    0 8rpx 20rpx rgba(139, 123, 168, 0.16),
-    inset 0 1rpx 0 rgba(255, 255, 255, 0.9);
-  min-width: 220rpx;
+  background: rgba(232, 196, 184, 0.12);
+  border: 1rpx solid rgba(232, 196, 184, 0.22);
+  box-shadow: none;
+  min-width: 200rpx;
   overflow: hidden;
 }
 
@@ -909,12 +907,8 @@
   width: calc(50% - 4rpx);
   height: calc(100% - 8rpx);
   border-radius: 999rpx;
-  background: linear-gradient(135deg,
-    rgba(184, 169, 211, 0.35) 0%,
-    rgba(232, 196, 184, 0.2) 100%);
-  box-shadow:
-    0 0 14rpx rgba(184, 169, 211, 0.2) inset,
-    0 6rpx 16rpx rgba(139, 123, 168, 0.18);
+  background: rgba(232, 196, 184, 0.2);
+  box-shadow: none;
   transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
   z-index: 0;
 }
@@ -925,7 +919,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 6rpx 8rpx;
+  padding: 6rpx 10rpx;
   z-index: 1;
   transition: color 0.3s ease, transform 0.3s ease;
 }
@@ -936,18 +930,18 @@
 
 .score-mode-tab-label {
   font-family: 'SourceHanSerifCN', 'Georgia', 'Palatino', 'Times New Roman', serif;
-  font-size: 20rpx;
-  letter-spacing: 1rpx;
+  font-size: 18rpx;
+  letter-spacing: 2rpx;
   color: var(--ink-muted);
   opacity: 0.7;
   transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .score-mode-tab.active .score-mode-tab-label {
-  color: var(--ink);
+  color: var(--lavender-deep);
   opacity: 1;
-  transform: scale(1.03);
-  text-shadow: 0 1rpx 3rpx rgba(139, 123, 168, 0.16);
+  transform: none;
+  text-shadow: none;
 }
 
 .score-mode-static {
@@ -955,21 +949,18 @@
   align-items: center;
   justify-content: center;
   padding: 6rpx 16rpx;
-  min-height: 48rpx;
   border-radius: 999rpx;
-  background: rgba(255, 255, 255, 0.8);
-  border: 1rpx solid rgba(184, 169, 211, 0.26);
-  box-shadow:
-    0 6rpx 18rpx rgba(139, 123, 168, 0.14),
-    inset 0 1rpx 0 rgba(255, 255, 255, 0.9);
+  background: rgba(232, 196, 184, 0.12);
+  border: 1rpx solid rgba(232, 196, 184, 0.22);
+  box-shadow: none;
 }
 
 .score-mode-static-label {
   font-family: 'SourceHanSerifCN', 'Georgia', 'Palatino', 'Times New Roman', serif;
-  font-size: 20rpx;
-  color: var(--ink-muted);
-  letter-spacing: 1rpx;
-  line-height: 1;
+  font-size: 18rpx;
+  color: var(--lavender-deep);
+  letter-spacing: 2rpx;
+  line-height: 1.1;
 }
 
 .score-mode-panel {
@@ -1236,11 +1227,13 @@
   position: relative;
   z-index: 3;
   height: 40rpx;
+  overflow: visible;
 }
 
 .score-slider .wx-slider-inner {
   height: 14rpx;
   background: transparent;
+  overflow: visible;
 }
 
 .score-slider .wx-slider-bar {
