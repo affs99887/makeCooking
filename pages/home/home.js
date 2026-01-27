@@ -46,13 +46,23 @@ Page({
     filterDayOptions: buildDayOptions(31),
     filterYearIndex: 0,
     filterMonthIndex: 0,
-    filterDayIndex: 0
+    filterDayIndex: 0,
+    scrollIndicatorOffset: 0,
+    scrollIndicatorThumbHeight: 0,
+    scrollIndicatorVisible: false
   },
 
   onLoad() {
     // 不立即加载，等待 splash 完成
     console.log('[Home] Page loaded, waiting for splash')
     this.recordsFetching = false
+    const systemInfo = wx.getSystemInfoSync()
+    this.rpxRatio = systemInfo.windowWidth / 750
+    this.recordsScrollTop = 0
+    this.recordsViewHeight = 0
+    this.recordsContentHeight = 0
+    this.scrollIndicatorMaxOffset = 0
+    this.scrollIndicatorMaxScrollTop = 0
   },
 
   onShow() {
@@ -63,6 +73,7 @@ Page({
     if (this.data.activeTab === 'stats') {
       this.setData({ recordsStatus: 'loading' })
       this.loadRecords(true, false)
+      this.initScrollIndicatorMetrics()
     }
   },
 
@@ -206,6 +217,7 @@ Page({
 
     if (tab === 'stats') {
       this.loadRecords(true, false)
+      this.initScrollIndicatorMetrics()
     }
 
     // 提示（可选）
@@ -407,6 +419,7 @@ Page({
           recordsRefreshing: false
         })
         this.recordsFetching = false
+        this.initScrollIndicatorMetrics()
       })
       .catch(error => {
         console.error('[Home] Failed to load records from cloud:', error)
@@ -432,6 +445,7 @@ Page({
           icon: 'none',
           duration: 2000
         })
+        this.initScrollIndicatorMetrics()
       })
   },
 
@@ -631,6 +645,7 @@ Page({
       filteredRecords: filterResult.filteredRecords,
       filtersActive: filterResult.filtersActive
     })
+    this.initScrollIndicatorMetrics()
   },
 
   onFilterMonthChange(e) {
@@ -661,6 +676,7 @@ Page({
       filteredRecords: filterResult.filteredRecords,
       filtersActive: filterResult.filtersActive
     })
+    this.initScrollIndicatorMetrics()
   },
 
   onFilterDayChange(e) {
@@ -678,6 +694,7 @@ Page({
       filteredRecords: filterResult.filteredRecords,
       filtersActive: filterResult.filtersActive
     })
+    this.initScrollIndicatorMetrics()
   },
 
   formatDateFromTimestamp(timestamp) {
@@ -749,5 +766,106 @@ Page({
 
   onRecordsRefresh() {
     this.loadRecords(true, true)
+  },
+
+  onRecordsScroll(e) {
+    const scrollTop = Number(e.detail.scrollTop || 0)
+    const scrollHeight = Number(e.detail.scrollHeight || 0)
+    const prevContentHeight = this.recordsContentHeight || 0
+    this.recordsScrollTop = scrollTop
+    const contentChanged = scrollHeight && scrollHeight !== prevContentHeight
+    if (contentChanged) {
+      this.recordsContentHeight = scrollHeight
+    }
+    if (!this.recordsViewHeight || !this.scrollIndicatorRailHeight) {
+      this.initScrollIndicatorMetrics(scrollHeight)
+      return
+    }
+    const needsRefresh = contentChanged
+      || !this.scrollIndicatorMaxOffset
+    if (needsRefresh) {
+      this.updateScrollIndicatorState()
+    }
+    if (needsRefresh) {
+      return
+    }
+    const maxScrollTop = this.scrollIndicatorMaxScrollTop || 0
+    const maxOffset = this.scrollIndicatorMaxOffset || 0
+    if (!maxScrollTop || !maxOffset) {
+      return
+    }
+    const progress = Math.min(Math.max(scrollTop / maxScrollTop, 0), 1)
+    const offset = maxOffset * progress
+    const nextOffset = Number(offset.toFixed(2))
+    if (nextOffset !== this.data.scrollIndicatorOffset) {
+      this.setData({
+        scrollIndicatorOffset: nextOffset
+      })
+    }
+  },
+
+  initScrollIndicatorMetrics(scrollHeight) {
+    if (this.data.activeTab !== 'stats') {
+      return
+    }
+    if (scrollHeight) {
+      this.recordsContentHeight = scrollHeight
+    }
+    wx.nextTick(() => {
+      const query = this.createSelectorQuery()
+      query.select('.records-scroll').boundingClientRect()
+      query.select('.scroll-indicator-rail').boundingClientRect()
+      query.exec(res => {
+        const [scrollRect, railRect] = res || []
+        if (!scrollRect || !railRect) {
+          return
+        }
+        this.recordsViewHeight = scrollRect.height || 0
+        this.scrollIndicatorRailHeight = railRect.height || 0
+        this.updateScrollIndicatorState()
+      })
+    })
+  },
+
+  updateScrollIndicatorState() {
+    const viewHeight = this.recordsViewHeight || 0
+    const contentHeight = this.recordsContentHeight || viewHeight
+    const railHeight = this.scrollIndicatorRailHeight || 0
+    if (!viewHeight || !railHeight) {
+      return
+    }
+    const maxScrollTop = Math.max(contentHeight - viewHeight, 0)
+    const isScrollable = maxScrollTop > 1
+    const minThumbHeight = Math.max(this.rpxToPx(22), 12)
+    let thumbHeight = railHeight
+    if (!isScrollable) {
+      thumbHeight = Math.max(minThumbHeight, Math.min(railHeight * 0.36, railHeight))
+    } else if (contentHeight > 0) {
+      thumbHeight = Math.max(railHeight * (viewHeight / contentHeight), minThumbHeight)
+      thumbHeight = Math.min(thumbHeight, railHeight)
+    }
+    const maxOffset = Math.max(railHeight - thumbHeight, 0)
+    const scrollTop = Math.max(this.recordsScrollTop || 0, 0)
+    const progress = maxScrollTop > 0 ? Math.min(scrollTop / maxScrollTop, 1) : 0
+    const offset = maxOffset * progress
+    this.scrollIndicatorMaxOffset = maxOffset
+    this.scrollIndicatorMaxScrollTop = maxScrollTop
+    const nextData = {
+      scrollIndicatorVisible: true,
+      scrollIndicatorThumbHeight: Number(thumbHeight.toFixed(2)),
+      scrollIndicatorOffset: Number(offset.toFixed(2))
+    }
+    if (
+      nextData.scrollIndicatorVisible !== this.data.scrollIndicatorVisible
+      || nextData.scrollIndicatorThumbHeight !== this.data.scrollIndicatorThumbHeight
+      || nextData.scrollIndicatorOffset !== this.data.scrollIndicatorOffset
+    ) {
+      this.setData(nextData)
+    }
+  },
+
+  rpxToPx(rpx) {
+    const ratio = this.rpxRatio || (wx.getSystemInfoSync().windowWidth / 750)
+    return rpx * ratio
   }
 })

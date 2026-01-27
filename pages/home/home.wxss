@@ -759,7 +759,8 @@ page {
 .stats-panel {
   position: absolute;
   inset: 0;
-  padding: 120rpx 60rpx calc(env(safe-area-inset-bottom) + 40rpx);
+  --stats-side-padding: 60rpx;
+  padding: 120rpx var(--stats-side-padding) calc(env(safe-area-inset-bottom) + 40rpx);
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
@@ -806,6 +807,13 @@ page {
   margin-bottom: 26rpx;
 }
 
+.stats-list-wrapper {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: visible;
+}
+
 .filter-picker {
   flex: 1;
   min-width: 160rpx;
@@ -842,8 +850,10 @@ page {
 }
 
 .records-scroll {
-  flex: 1;
+  height: 100%;
   min-height: 0;
+  position: relative;
+  z-index: 1;
 }
 
 .records-inner {
@@ -853,6 +863,56 @@ page {
   flex-direction: column;
   box-sizing: border-box;
   position: relative;
+}
+
+.scroll-indicator {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: calc(-1 * var(--stats-side-padding) + 12rpx);
+  width: 26rpx;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(8rpx);
+  transition: opacity 0.35s ease, transform 0.45s ease;
+  z-index: 2;
+}
+
+.scroll-indicator.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.scroll-indicator-rail {
+  position: absolute;
+  top: 10rpx;
+  bottom: 10rpx;
+  left: 50%;
+  width: 8rpx;
+  transform: translateX(-50%);
+  border-radius: 999rpx;
+  background: repeating-linear-gradient(
+    180deg,
+    rgba(184, 169, 211, 0.4) 0%,
+    rgba(184, 169, 211, 0.4) 6rpx,
+    transparent 6rpx,
+    transparent 18rpx
+  );
+  opacity: 0.45;
+}
+
+.scroll-indicator-thumb {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 14rpx;
+  border-radius: 999rpx;
+  background: rgba(45, 42, 50, 0.65);
+  box-shadow:
+    0 4rpx 10rpx rgba(45, 42, 50, 0.18),
+    0 0 12rpx rgba(184, 169, 211, 0.28);
+  transform: translate(-50%, var(--thumb-offset, 0px));
+  transition: height 0.2s ease;
 }
 
 .state-layer {
