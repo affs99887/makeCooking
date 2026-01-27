@@ -7,6 +7,8 @@ const TYPE_LABELS = {
   reverse: 'Reverse',
   suck: 'Suck'
 }
+const SCROLL_TICK_COUNT = 9
+const SCROLL_TICKS = Array.from({ length: SCROLL_TICK_COUNT }, (_, index) => ({ index }))
 
 const createAllOption = () => ({ label: '全部', value: '' })
 const buildMonthOptions = () => {
@@ -47,22 +49,17 @@ Page({
     filterYearIndex: 0,
     filterMonthIndex: 0,
     filterDayIndex: 0,
-    scrollIndicatorOffset: 0,
-    scrollIndicatorThumbHeight: 0,
-    scrollIndicatorVisible: false
+    scrollTicks: SCROLL_TICKS,
+    scrollTickActiveIndex: 0
   },
 
   onLoad() {
     // 不立即加载，等待 splash 完成
     console.log('[Home] Page loaded, waiting for splash')
     this.recordsFetching = false
-    const systemInfo = wx.getSystemInfoSync()
-    this.rpxRatio = systemInfo.windowWidth / 750
     this.recordsScrollTop = 0
     this.recordsViewHeight = 0
     this.recordsContentHeight = 0
-    this.scrollIndicatorMaxOffset = 0
-    this.scrollIndicatorMaxScrollTop = 0
   },
 
   onShow() {
@@ -777,31 +774,11 @@ Page({
     if (contentChanged) {
       this.recordsContentHeight = scrollHeight
     }
-    if (!this.recordsViewHeight || !this.scrollIndicatorRailHeight) {
+    if (!this.recordsViewHeight) {
       this.initScrollIndicatorMetrics(scrollHeight)
       return
     }
-    const needsRefresh = contentChanged
-      || !this.scrollIndicatorMaxOffset
-    if (needsRefresh) {
-      this.updateScrollIndicatorState()
-    }
-    if (needsRefresh) {
-      return
-    }
-    const maxScrollTop = this.scrollIndicatorMaxScrollTop || 0
-    const maxOffset = this.scrollIndicatorMaxOffset || 0
-    if (!maxScrollTop || !maxOffset) {
-      return
-    }
-    const progress = Math.min(Math.max(scrollTop / maxScrollTop, 0), 1)
-    const offset = maxOffset * progress
-    const nextOffset = Number(offset.toFixed(2))
-    if (nextOffset !== this.data.scrollIndicatorOffset) {
-      this.setData({
-        scrollIndicatorOffset: nextOffset
-      })
-    }
+    this.updateScrollIndicatorState()
   },
 
   initScrollIndicatorMetrics(scrollHeight) {
@@ -814,58 +791,41 @@ Page({
     wx.nextTick(() => {
       const query = this.createSelectorQuery()
       query.select('.records-scroll').boundingClientRect()
-      query.select('.scroll-indicator-rail').boundingClientRect()
+      query.select('.records-inner').boundingClientRect()
       query.exec(res => {
-        const [scrollRect, railRect] = res || []
-        if (!scrollRect || !railRect) {
+        const [scrollRect, contentRect] = res || []
+        if (!scrollRect) {
           return
         }
         this.recordsViewHeight = scrollRect.height || 0
-        this.scrollIndicatorRailHeight = railRect.height || 0
+        if (contentRect && contentRect.height) {
+          this.recordsContentHeight = contentRect.height
+        }
         this.updateScrollIndicatorState()
       })
     })
   },
 
-  updateScrollIndicatorState() {
+  getScrollProgress() {
     const viewHeight = this.recordsViewHeight || 0
     const contentHeight = this.recordsContentHeight || viewHeight
-    const railHeight = this.scrollIndicatorRailHeight || 0
-    if (!viewHeight || !railHeight) {
-      return
+    if (!viewHeight || !contentHeight) {
+      return 0
     }
     const maxScrollTop = Math.max(contentHeight - viewHeight, 0)
-    const isScrollable = maxScrollTop > 1
-    const minThumbHeight = Math.max(this.rpxToPx(22), 12)
-    let thumbHeight = railHeight
-    if (!isScrollable) {
-      thumbHeight = Math.max(minThumbHeight, Math.min(railHeight * 0.36, railHeight))
-    } else if (contentHeight > 0) {
-      thumbHeight = Math.max(railHeight * (viewHeight / contentHeight), minThumbHeight)
-      thumbHeight = Math.min(thumbHeight, railHeight)
+    if (!maxScrollTop) {
+      return 0
     }
-    const maxOffset = Math.max(railHeight - thumbHeight, 0)
     const scrollTop = Math.max(this.recordsScrollTop || 0, 0)
-    const progress = maxScrollTop > 0 ? Math.min(scrollTop / maxScrollTop, 1) : 0
-    const offset = maxOffset * progress
-    this.scrollIndicatorMaxOffset = maxOffset
-    this.scrollIndicatorMaxScrollTop = maxScrollTop
-    const nextData = {
-      scrollIndicatorVisible: true,
-      scrollIndicatorThumbHeight: Number(thumbHeight.toFixed(2)),
-      scrollIndicatorOffset: Number(offset.toFixed(2))
-    }
-    if (
-      nextData.scrollIndicatorVisible !== this.data.scrollIndicatorVisible
-      || nextData.scrollIndicatorThumbHeight !== this.data.scrollIndicatorThumbHeight
-      || nextData.scrollIndicatorOffset !== this.data.scrollIndicatorOffset
-    ) {
-      this.setData(nextData)
-    }
+    return Math.min(Math.max(scrollTop / maxScrollTop, 0), 1)
   },
 
-  rpxToPx(rpx) {
-    const ratio = this.rpxRatio || (wx.getSystemInfoSync().windowWidth / 750)
-    return rpx * ratio
+  updateScrollIndicatorState() {
+    const progress = this.getScrollProgress()
+    const rawIndex = Math.floor(progress * SCROLL_TICK_COUNT)
+    const activeIndex = Math.min(Math.max(rawIndex, 0), SCROLL_TICK_COUNT - 1)
+    if (activeIndex !== this.data.scrollTickActiveIndex) {
+      this.setData({ scrollTickActiveIndex: activeIndex })
+    }
   }
 })
