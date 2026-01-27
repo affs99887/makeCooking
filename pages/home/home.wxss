@@ -930,6 +930,7 @@ page {
   transform: translateY(0);
   max-height: 9999rpx;
   pointer-events: auto;
+  padding-bottom: calc(env(safe-area-inset-bottom));
 }
 
 .empty-illustration {
