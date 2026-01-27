@@ -287,9 +287,15 @@
 /* ========== 滚动内容区 ========== */
 .drawer-content {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: hidden;
   padding: 0 28rpx calc(180rpx + env(safe-area-inset-bottom));
   box-sizing: border-box;
+}
+
+.drawer-content::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  background: transparent;
 }
 
 

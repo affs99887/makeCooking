@@ -36,7 +36,11 @@
     </view>
 
     <!-- 滚动内容区 -->
-    <scroll-view class="drawer-content" scroll-y>
+    <scroll-view class="drawer-content"
+                 scroll-y
+                 enhanced="true"
+                 show-scrollbar="{{false}}"
+                 scrollbar="none">
 
       <!-- 烹饪风格选择 -->
       <view class="section-block type-section {{isClosing ? 'section-exit' : ''}}">
