@@ -868,9 +868,9 @@ page {
 .scroll-indicator {
   position: absolute;
   top: 50%;
-  right: calc(-1 * var(--stats-side-padding) + 8rpx);
+  right: 16rpx;
   width: 40rpx;
-  height: 150rpx;
+  height: 200rpx;
   display: flex;
   align-items: center;
   justify-content: center;

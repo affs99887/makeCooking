@@ -133,14 +133,14 @@
           </view>
         </view>
       </scroll-view>
+    </view>
 
-      <view class="scroll-indicator is-visible">
-        <view class="scroll-ticks">
-          <view class="scroll-tick {{idx === scrollTickActiveIndex ? 'is-active' : (idx === scrollTickActiveIndex - 1 || idx === scrollTickActiveIndex + 1 ? 'is-near' : '')}}"
-                wx:for="{{scrollTicks}}"
-                wx:key="index"
-                wx:for-index="idx"></view>
-        </view>
+    <view class="scroll-indicator is-visible">
+      <view class="scroll-ticks">
+        <view class="scroll-tick {{idx === scrollTickActiveIndex ? 'is-active' : (idx === scrollTickActiveIndex - 1 || idx === scrollTickActiveIndex + 1 ? 'is-near' : '')}}"
+              wx:for="{{scrollTicks}}"
+              wx:key="index"
+              wx:for-index="idx"></view>
       </view>
     </view>
   </view>
