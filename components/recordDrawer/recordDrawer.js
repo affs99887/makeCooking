@@ -77,6 +77,11 @@ Component({
       type: Object,
       value: null,
       observer: 'onRecordChange'
+    },
+    scoreMax: {
+      type: Number,
+      value: TOTAL_SCORE_MAX,
+      observer: 'onScoreMaxChange'
     }
   },
 
@@ -132,6 +137,7 @@ Component({
     attached() {
       this.onModeChange(this.properties.mode)
       this.onRecordChange(this.properties.record)
+      this.onScoreMaxChange(this.properties.scoreMax)
       this.initDrawerMetrics()
       console.log('[RecordDrawer] Component attached')
     },
@@ -1169,6 +1175,13 @@ Component({
       }
     },
 
+    onScoreMaxChange(scoreMax) {
+      const normalized = this.normalizeScoreMax(scoreMax)
+      if (normalized !== this.data.totalScoreMax) {
+        this.setData({ totalScoreMax: normalized })
+      }
+    },
+
     onRecordChange(record) {
       if (record && typeof record === 'object') {
         this.applyRecord(record)
@@ -1184,6 +1197,17 @@ Component({
         return mode
       }
       return 'create'
+    },
+
+    normalizeScoreMax(rawScore, currentScore) {
+      const value = Number(rawScore)
+      if (!Number.isFinite(value) || value <= 0) {
+        return TOTAL_SCORE_MAX
+      }
+      const safeCurrentScore = Number.isFinite(Number(currentScore))
+        ? Number(currentScore)
+        : Number(this.data.currentScore || 0)
+      return Math.max(value, safeCurrentScore)
     },
 
     setMode(mode) {
@@ -1227,6 +1251,7 @@ Component({
         })
         currentScore = singleScore
       }
+      const totalScoreMax = this.normalizeScoreMax(this.properties.scoreMax, currentScore)
       const scoreState = this.getScoreState(
         typeCounts,
         typeScores,
@@ -1251,6 +1276,7 @@ Component({
         scoreVisible: modeState.showScoreSection,
         showScoreToggle: modeState.showScoreToggle,
         currentScore,
+        totalScoreMax,
         currentRecordId: recordId,
         showDateEditor: false
       }, scoreState, dateState))

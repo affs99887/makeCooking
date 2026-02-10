@@ -38,6 +38,7 @@ Page({
     showDrawer: false,      // 新增：控制抽屉显示
     drawerMode: 'create',
     selectedRecord: null,
+    scoreMax: 0,
     records: [],
     filteredRecords: [],
     recordsStatus: 'idle',
@@ -141,6 +142,7 @@ Page({
       drawerMode: 'create',
       selectedRecord: null
     })
+    this.loadScoreMax()
   },
 
   /**
@@ -193,6 +195,34 @@ Page({
           icon: 'none',
           duration: 2000
         })
+      })
+  },
+
+  /**
+   * 获取当前最高评分（用于新增记录展示）
+   */
+  loadScoreMax() {
+    if (!wx.cloud) {
+      this.setData({ scoreMax: 0 })
+      return
+    }
+
+    const db = wx.cloud.database()
+    db.collection('cooking_records')
+      .orderBy('score', 'desc')
+      .limit(1)
+      .get()
+      .then(res => {
+        const record = Array.isArray(res.data) ? res.data[0] : null
+        const rawScore = record && record.score !== undefined
+          ? Number(record.score)
+          : 0
+        const scoreMax = Number.isFinite(rawScore) ? rawScore : 0
+        this.setData({ scoreMax })
+      })
+      .catch(error => {
+        console.error('[Home] Failed to load max score:', error)
+        this.setData({ scoreMax: 0 })
       })
   },
 
@@ -329,11 +359,16 @@ Page({
       return
     }
 
-    const db = wx.cloud.database()
-    db.collection('cooking_records')
-      .doc(recordId)
-      .remove()
-      .then(() => {
+    wx.showLoading({ title: '正在删除' })
+    wx.cloud.callFunction({
+      name: 'deleteRecord',
+      data: { recordId }
+    })
+      .then(res => {
+        const result = res && res.result ? res.result : {}
+        if (!result.success) {
+          throw new Error(result.error || '删除失败')
+        }
         wx.showToast({
           title: '记录已删除',
           icon: 'success',
@@ -351,6 +386,9 @@ Page({
           icon: 'none',
           duration: 2000
         })
+      })
+      .finally(() => {
+        wx.hideLoading()
       })
   },
 

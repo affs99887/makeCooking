@@ -200,6 +200,7 @@
     visible="{{showDrawer}}"
     mode="{{drawerMode}}"
     record="{{selectedRecord}}"
+    score-max="{{scoreMax}}"
     bind:close="onDrawerClose"
     bind:save="onRecordSave"
     bind:update="onRecordUpdate"
