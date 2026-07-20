@@ -147,6 +147,22 @@
                 <text class="type-count-text">x{{typeCounts.suck}}</text>
               </view>
             </view>
+
+            <view class="type-card type-card-sidein {{typeCounts.sidein > 0 ? 'active' : ''}}"
+                  bindtap="onTypeToggle"
+                  catchlongpress="onTypeDecrease"
+                  data-type="sidein">
+              <view class="type-check"></view>
+              <view class="type-card-content">
+                <text class="type-name-cn">侧边</text>
+                <text class="type-name-en">Sidein</text>
+              </view>
+              <view class="type-count" wx:if="{{typeCounts.sidein > 1}}"
+                    catchtap="onTypeDecrease"
+                    data-type="sidein">
+                <text class="type-count-text">x{{typeCounts.sidein}}</text>
+              </view>
+            </view>
           </view>
         </view>
       </view>
@@ -227,7 +243,7 @@
           <view class="score-display">
             <text class="score-value {{scoreAnimClass}}">{{currentScore}}</text>
             <text class="score-unit">分</text>
-            <text class="score-max">/ {{totalScoreMax}}</text>
+            <text class="score-max">/ {{scoreMax > 0 ? '历史最高' : '默认上限'}} {{totalScoreMax}}</text>
           </view>
 
           <view class="slider-container">
@@ -312,6 +328,31 @@
             </block>
           </view>
         </view>
+        </view>
+      </view>
+
+      <!-- 备注 -->
+      <view class="section-block note-section">
+        <view class="section-header">
+          <view class="section-icon"></view>
+          <text class="section-title">备注</text>
+          <text class="section-hint">随手写下</text>
+        </view>
+
+        <view class="note-paper">
+          <textarea class="note-input"
+                    wx:if="{{!isReadonly}}"
+                    value="{{note}}"
+                    maxlength="500"
+                    auto-height
+                    cursor-spacing="24"
+                    show-confirm-bar="{{false}}"
+                    placeholder="写下味道、火候，或当时的一点灵感…"
+                    placeholder-class="note-placeholder"
+                    bindinput="onNoteInput"></textarea>
+          <text class="note-readonly" wx:elif="{{note}}">{{note}}</text>
+          <text class="note-empty" wx:else>这次没有留下备注</text>
+          <text class="note-count" wx:if="{{!isReadonly}}">{{note.length}} / 500</text>
         </view>
       </view>
 

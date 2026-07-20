@@ -5,7 +5,8 @@ const BASE_TYPE_COUNTS = {
   backin: 0,
   lite: 0,
   reverse: 0,
-  suck: 0
+  suck: 0,
+  sidein: 0
 }
 const BASE_TYPE_SCORES = {
   standard: 0,
@@ -13,7 +14,8 @@ const BASE_TYPE_SCORES = {
   backin: 0,
   lite: 0,
   reverse: 0,
-  suck: 0
+  suck: 0,
+  sidein: 0
 }
 const TYPE_LABELS = {
   standard: '标准',
@@ -21,9 +23,10 @@ const TYPE_LABELS = {
   backin: '回味',
   lite: '清淡',
   reverse: '反转',
-  suck: '萨克'
+  suck: '萨克',
+  sidein: '侧边'
 }
-const TYPE_ORDER = ['standard', 'service', 'backin', 'lite', 'reverse', 'suck']
+const TYPE_ORDER = ['standard', 'service', 'backin', 'lite', 'reverse', 'suck', 'sidein']
 const SCORE_MODE = {
   total: 'total',
   perType: 'perType'
@@ -104,6 +107,7 @@ Component({
     displayTime: '',
     useNowLabel: false,
     showDateEditor: false,
+    note: '',
     drawerTranslate: 0,
     maskBlur: 0,
     windowHeight: 0,
@@ -694,6 +698,15 @@ Component({
       this.checkCanSave()
     },
 
+    onNoteInput(e) {
+      if (this.data.isReadonly) {
+        return
+      }
+      this.setData({
+        note: e.detail.value || ''
+      })
+    },
+
     /**
      * 切换评分模式（分开/总分）
      */
@@ -1008,6 +1021,7 @@ Component({
         scoreVisible: false,
         showScoreToggle: false,
         currentScore: 0,
+        note: '',
         canSave: false,
         currentRecordId: '',
         useNowLabel: true,
@@ -1233,6 +1247,9 @@ Component({
         selectedMethod = ''
       }
       const score = Number(record.score || 0)
+      const note = typeof record.note === 'string'
+        ? record.note
+        : (typeof record.remark === 'string' ? record.remark : '')
       const recordId = record._id || record.id || ''
       const dateState = this.getDateTimeState(this.resolveRecordDate(record))
       const activeTypes = this.getActiveTypes(typeCounts)
@@ -1277,6 +1294,7 @@ Component({
         showScoreToggle: modeState.showScoreToggle,
         currentScore,
         totalScoreMax,
+        note,
         currentRecordId: recordId,
         showDateEditor: false
       }, scoreState, dateState))
@@ -1337,6 +1355,7 @@ Component({
         score: totalScore,
         scoreMode,
         typeScores: Object.assign({}, this.data.typeScores),
+        note: String(this.data.note || '').trim(),
         timestamp,
         date,
         time

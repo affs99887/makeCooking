@@ -5,10 +5,12 @@ const TYPE_LABELS = {
   backin: 'Backin',
   lite: 'Lite',
   reverse: 'Reverse',
-  suck: 'Suck'
+  suck: 'Suck',
+  sidein: 'Sidein'
 }
 const SCROLL_TICK_COUNT = 9
 const SCROLL_TICKS = Array.from({ length: SCROLL_TICK_COUNT }, (_, index) => ({ index }))
+const RECORDS_PAGE_SIZE = 20
 
 const createAllOption = () => ({ label: '全部', value: '' })
 const buildMonthOptions = () => {
@@ -43,6 +45,8 @@ Page({
     filteredRecords: [],
     recordsStatus: 'idle',
     recordsRefreshing: false,
+    recordsLoadingMore: false,
+    recordsHasMore: true,
     filtersActive: false,
     filterYearOptions: [createAllOption()],
     filterMonthOptions: buildMonthOptions(),
@@ -312,6 +316,7 @@ Page({
       timestamp: recordData.timestamp,
       date: recordData.date,
       time: recordData.time || '',
+      note: recordData.note || '',
       updatedAt: db.serverDate()
     }
 
@@ -401,14 +406,17 @@ Page({
     const nextStatus = isRefresh ? this.data.recordsStatus : 'loading'
     this.setData({
       recordsStatus: nextStatus,
-      recordsRefreshing: !!isRefresh
+      recordsRefreshing: !!isRefresh,
+      recordsLoadingMore: false
     })
 
     if (!wx.cloud) {
       this.recordsFetching = false
       const nextData = {
         recordsStatus: 'loaded',
-        recordsRefreshing: false
+        recordsRefreshing: false,
+        recordsLoadingMore: false,
+        recordsHasMore: false
       }
       if (!isRefresh) {
         nextData.records = []
@@ -433,7 +441,7 @@ Page({
     const db = wx.cloud.database()
     db.collection('cooking_records')
       .orderBy('timestamp', 'desc')
-      .limit(50)
+      .limit(RECORDS_PAGE_SIZE)
       .get()
       .then(res => {
         const list = Array.isArray(res.data) ? res.data : []
@@ -451,7 +459,9 @@ Page({
           filterMonthIndex: filterState.filterMonthIndex,
           filterDayIndex: filterState.filterDayIndex,
           recordsStatus: 'loaded',
-          recordsRefreshing: false
+          recordsRefreshing: false,
+          recordsLoadingMore: false,
+          recordsHasMore: list.length === RECORDS_PAGE_SIZE
         })
         this.recordsFetching = false
         this.initScrollIndicatorMetrics()
@@ -461,7 +471,8 @@ Page({
         this.recordsFetching = false
         const nextData = {
           recordsStatus: 'loaded',
-          recordsRefreshing: false
+          recordsRefreshing: false,
+          recordsLoadingMore: false
         }
         if (!isRefresh) {
           nextData.records = []
@@ -473,6 +484,7 @@ Page({
           nextData.filterYearIndex = 0
           nextData.filterMonthIndex = 0
           nextData.filterDayIndex = 0
+          nextData.recordsHasMore = false
         }
         this.setData(nextData)
         wx.showToast({
@@ -481,6 +493,76 @@ Page({
           duration: 2000
         })
         this.initScrollIndicatorMetrics()
+      })
+  },
+
+  loadMoreRecords() {
+    if (
+      this.recordsFetching
+      || this.data.recordsLoadingMore
+      || !this.data.recordsHasMore
+      || this.data.recordsStatus !== 'loaded'
+    ) {
+      return
+    }
+
+    if (!wx.cloud) {
+      this.setData({ recordsHasMore: false })
+      return
+    }
+
+    const existingRecords = Array.isArray(this.data.records) ? this.data.records : []
+    const offset = existingRecords.length
+    this.recordsFetching = true
+    this.setData({ recordsLoadingMore: true })
+
+    const db = wx.cloud.database()
+    db.collection('cooking_records')
+      .orderBy('timestamp', 'desc')
+      .skip(offset)
+      .limit(RECORDS_PAGE_SIZE)
+      .get()
+      .then(res => {
+        const list = Array.isArray(res.data) ? res.data : []
+        const appendedRecords = this.formatRecords(list)
+        const seenRecordIds = new Set()
+        const records = existingRecords.concat(appendedRecords).filter(record => {
+          const recordId = record._id || record.id || record.recordId
+          if (seenRecordIds.has(recordId)) {
+            return false
+          }
+          seenRecordIds.add(recordId)
+          return true
+        })
+        const addedCount = records.length - existingRecords.length
+        const filterState = this.syncFilterOptions(records)
+        const filterResult = this.applyRecordFilters(records, filterState)
+
+        this.setData({
+          records,
+          filteredRecords: filterResult.filteredRecords,
+          filtersActive: filterResult.filtersActive,
+          filterYearOptions: filterState.filterYearOptions,
+          filterMonthOptions: filterState.filterMonthOptions,
+          filterDayOptions: filterState.filterDayOptions,
+          filterYearIndex: filterState.filterYearIndex,
+          filterMonthIndex: filterState.filterMonthIndex,
+          filterDayIndex: filterState.filterDayIndex,
+          recordsLoadingMore: false,
+          recordsHasMore: list.length === RECORDS_PAGE_SIZE && addedCount > 0
+        })
+        this.recordsFetching = false
+        this.initScrollIndicatorMetrics()
+      })
+      .catch(error => {
+        console.error('[Home] Failed to load more records:', error)
+        this.recordsFetching = false
+        this.setData({ recordsLoadingMore: false })
+        wx.showToast({
+          title: '加载更多失败，请重试',
+          icon: 'none',
+          duration: 2000
+        })
       })
   },
 
@@ -515,7 +597,8 @@ Page({
       backin: 0,
       lite: 0,
       reverse: 0,
-      suck: 0
+      suck: 0,
+      sidein: 0
     }
     if (record.typeCounts && typeof record.typeCounts === 'object') {
       return Object.assign({}, counts, record.typeCounts)
@@ -801,6 +884,10 @@ Page({
 
   onRecordsRefresh() {
     this.loadRecords(true, true)
+  },
+
+  onRecordsLoadMore() {
+    this.loadMoreRecords()
   },
 
   onRecordsScroll(e) {
