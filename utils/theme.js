@@ -1,8 +1,4 @@
-const STORAGE_KEY = 'appearancePreference'
-const PREFERENCES = ['system', 'light', 'dark']
-const LABELS = { system: '自动', light: '浅色', dark: '深色' }
 const listeners = new Set()
-let preference = 'system'
 let systemTheme = 'light'
 let initialized = false
 
@@ -16,11 +12,7 @@ function readSystemTheme() {
 }
 
 function getAppearance() {
-  return {
-    theme: preference === 'system' ? systemTheme : preference,
-    preference,
-    label: LABELS[preference]
-  }
+  return { theme: systemTheme }
 }
 
 function applyNativeAppearance() {
@@ -50,12 +42,6 @@ function publishAppearance() {
 function initializeAppearance() {
   if (initialized) return
   initialized = true
-  try {
-    const saved = wx.getStorageSync(STORAGE_KEY)
-    preference = PREFERENCES.includes(saved) ? saved : 'system'
-  } catch (error) {
-    preference = 'system'
-  }
   systemTheme = readSystemTheme()
   if (wx.onThemeChange) {
     wx.onThemeChange(event => {
@@ -63,18 +49,6 @@ function initializeAppearance() {
       publishAppearance()
     })
   }
-}
-
-function setAppearancePreference(value) {
-  if (!PREFERENCES.includes(value)) return
-  preference = value
-  systemTheme = readSystemTheme()
-  try {
-    wx.setStorageSync(STORAGE_KEY, value)
-  } catch (error) {
-    console.warn('[Theme] Unable to persist appearance:', error)
-  }
-  publishAppearance()
 }
 
 function subscribeAppearance(listener) {
@@ -87,7 +61,6 @@ function subscribeAppearance(listener) {
 module.exports = {
   initializeAppearance,
   getAppearance,
-  setAppearancePreference,
   subscribeAppearance,
   applyNativeAppearance
 }

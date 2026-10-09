@@ -1,12 +1,6 @@
 <!--home.wxml-->
 
 <view class="page theme-{{theme}}" style="--content-top: {{contentTop}}px;">
-  <button class="appearance-switch" size="mini" style="top: {{appearanceTop}}px;" bindtap="onAppearanceTap" hover-class="appearance-switch-hover" aria-label="切换外观，当前{{appearanceLabel}}">
-    <view class="appearance-content">
-      <view class="appearance-icon {{theme === 'dark' ? 'is-dark' : ''}}"></view>
-      <text>{{appearanceLabel}}</text>
-    </view>
-  </button>
   <view class="content" wx:if="{{activeTab === 'today'}}">
     <!-- 日期显示 -->
     <view class="date-display">{{currentDate}}</view>

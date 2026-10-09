@@ -10,7 +10,7 @@
   --stats-accent: var(--lavender-deep);
   position: absolute;
   inset: 0;
-  padding: 156rpx 48rpx 0;
+  padding: 156rpx 0 0;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -20,7 +20,7 @@
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  margin-bottom: 36rpx;
+  margin: 0 48rpx 36rpx;
 }
 .statistics-kicker {
   display: block;
@@ -41,28 +41,41 @@
   padding-bottom: 4rpx;
 }
 .range-control {
+  position: relative;
   display: flex;
-  padding: 6rpx;
-  border: 1rpx solid var(--stats-line);
-  border-radius: 16rpx;
-  gap: 6rpx;
-  margin-bottom: 12rpx;
+  gap: 40rpx;
+  margin: 0 48rpx;
+  border-bottom: 1rpx solid var(--stats-line);
 }
 .range-option {
-  flex: 1;
-  text-align: center;
-  font-size: 24rpx;
-  padding: 16rpx 0;
-  border-radius: 10rpx;
+  position: relative;
+  width: 88rpx;
+  flex-shrink: 0;
+  font-size: 28rpx;
+  padding: 18rpx 0 24rpx;
   color: var(--stats-muted);
+  font-weight: 500;
+  transition: color 220ms ease;
 }
 .range-option.is-active {
   color: var(--stats-ink);
-  background: var(--stats-surface);
-  font-weight: 500;
 }
-.statistics-scroll { flex: 1; height: 0; min-height: 0; }
-.statistics-body { padding: 32rpx 0 calc(env(safe-area-inset-bottom) + 190rpx); }
+.range-indicator {
+  position: absolute;
+  left: 0;
+  bottom: -1rpx;
+  width: 56rpx;
+  height: 3rpx;
+  background: var(--stats-ink);
+  pointer-events: none;
+  will-change: transform;
+}
+.statistics-swiper { flex: 1; width: 100%; height: 0; min-height: 0; overflow: hidden; }
+.statistics-pane { display: flex; flex-direction: column; overflow: hidden; }
+.statistics-scroll { flex: 1; width: 100%; height: 100%; min-height: 0; }
+/* 留白归各页所有，滑动时连接处始终有完整间距。 */
+.statistics-body { box-sizing: border-box; padding: 32rpx 48rpx calc(env(safe-area-inset-bottom) + 190rpx); opacity: 0.72; transition: opacity 260ms ease; }
+.statistics-pane.is-active .statistics-body { opacity: 1; }
 .summary-hero { padding: 10rpx 0 36rpx; }
 .summary-eyebrow { display: flex; justify-content: space-between; align-items: center; font-size: 26rpx; }
 .summary-period { color: var(--stats-muted); font-family: Georgia, serif; font-size: 24rpx; }
@@ -80,10 +93,26 @@
 .insight-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 28rpx; }
 .insight-title { font-family: 'SourceHanSerifCN', Georgia, serif; font-size: 29rpx; }
 .insight-caption { color: var(--stats-muted); font-size: 20rpx; }
+.calendar-weekdays { display: flex; padding-bottom: 18rpx; border-bottom: 1rpx solid var(--stats-line); }
+.calendar-weekday { width: 14.285714%; text-align: center; color: var(--stats-faint); font-size: 20rpx; }
+.calendar-grid { display: flex; flex-wrap: wrap; margin: 14rpx -4rpx 0; }
+.calendar-slot { width: 14.285714%; height: 96rpx; padding: 4rpx; box-sizing: border-box; }
+.calendar-day { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6rpx; height: 100%; border-radius: 12rpx; }
+.calendar-day.has-records { background: var(--stats-track); }
+.calendar-date { display: flex; align-items: center; justify-content: center; width: 44rpx; height: 44rpx; box-sizing: border-box; border: 1rpx solid transparent; border-radius: 50%; font-size: 24rpx; font-variant-numeric: tabular-nums; transition: color 180ms ease, background-color 180ms ease, border-color 180ms ease; }
+.calendar-day.is-future .calendar-date { color: var(--stats-faint); }
+.calendar-day.is-today .calendar-date { border-color: var(--stats-muted); }
+.calendar-day.is-selected .calendar-date { color: rgb(var(--background-rgb)); background: var(--stats-ink); border-color: var(--stats-ink); }
+.calendar-count { min-height: 18rpx; color: var(--stats-muted); font-size: 18rpx; line-height: 1; }
+.calendar-legend { display: flex; align-items: center; gap: 22rpx; margin-top: 20rpx; color: var(--stats-faint); font-size: 18rpx; }
+.calendar-legend-item { display: flex; align-items: center; gap: 8rpx; }
+.calendar-legend-record { width: 18rpx; height: 18rpx; background: var(--stats-track); border-radius: 4rpx; }
+.calendar-legend-today { width: 18rpx; height: 18rpx; box-sizing: border-box; border: 1rpx solid var(--stats-muted); border-radius: 50%; }
+.calendar-tip { margin-left: auto; }
 .trend-plot { display: flex; gap: 14rpx; height: 210rpx; }
 .trend-axis { display: flex; flex-direction: column; justify-content: space-between; width: 24rpx; flex-shrink: 0; padding: 0 0 43rpx; color: var(--stats-faint); font-family: Georgia, serif; font-size: 18rpx; }
-.trend-scroll { flex: 1; width: 0; height: 210rpx; }
-.trend-columns { display: flex; height: 208rpx; min-width: 100%; border-bottom: 1rpx solid var(--stats-line); }
+.trend-content { flex: 1; min-width: 0; height: 210rpx; }
+.trend-columns { display: flex; height: 208rpx; width: 100%; border-bottom: 1rpx solid var(--stats-line); }
 .trend-column { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 16rpx; }
 .trend-bar-track { display: flex; justify-content: center; align-items: flex-end; height: 163rpx; width: 100%; }
 .trend-bar { width: 22rpx; background: var(--stats-accent); opacity: 0.32; border-radius: 4rpx 4rpx 0 0; min-height: 3rpx; }

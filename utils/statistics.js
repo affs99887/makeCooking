@@ -112,6 +112,23 @@ function buildTrend(records, range, now) {
   }
 }
 
+function buildCalendar(trend, now) {
+  // 周一为每周第一天，首尾补齐空格，保证每一行都是完整的一周。
+  const offset = (new Date(now.getFullYear(), now.getMonth(), 1).getDay() + 6) % 7
+  const cells = Array.from({ length: offset }, (_, index) => ({ key: `before-${index}`, isEmpty: true }))
+  trend.forEach((bucket, index) => {
+    cells.push(Object.assign({}, bucket, {
+      trendIndex: index,
+      isToday: index + 1 === now.getDate(),
+      isFuture: index + 1 > now.getDate()
+    }))
+  })
+  while (cells.length % 7) {
+    cells.push({ key: `after-${cells.length}`, isEmpty: true })
+  }
+  return cells
+}
+
 function buildStatistics(source, range = 'month', now = new Date()) {
   const allRecords = (Array.isArray(source) ? source : []).map(normalizeRecord)
   const records = allRecords.filter(record => {
@@ -146,6 +163,7 @@ function buildStatistics(source, range = 'month', now = new Date()) {
   const averageScore = scores.length
     ? Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length) : null
   const bestScore = scores.length ? scores.reduce((best, score) => Math.max(best, score), 0) : null
+  const trendSummary = buildTrend(records, range, now)
   return Object.assign({
     recordCount: records.length,
     recordCountText: formatNumber(records.length),
@@ -162,8 +180,9 @@ function buildStatistics(source, range = 'month', now = new Date()) {
     breakdown,
     methodBreakdown,
     trendTitle: range === 'month' ? '每日记录' : '每月记录',
-    trendCaption: range === 'all' ? '近 12 个月' : rangeLabel
-  }, buildTrend(records, range, now))
+    trendCaption: range === 'all' ? '近 12 个月' : rangeLabel,
+    calendar: range === 'month' ? buildCalendar(trendSummary.trend, now) : []
+  }, trendSummary)
 }
 
 module.exports = { buildStatistics }
