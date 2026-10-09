@@ -90,7 +90,7 @@
 .trend-label { color: var(--stats-faint); font-size: 18rpx; white-space: nowrap; }
 .trend-column.is-selected .trend-label { color: var(--stats-ink); }
 .trend-detail { display: flex; align-items: center; justify-content: space-between; font-size: 22rpx; margin-top: 22rpx; color: var(--stats-muted); }
-.trend-detail text:last-child { color: var(--stats-ink); }
+.trend-detail-value { color: var(--stats-ink); }
 .chart-hint { display: block; color: var(--stats-faint); font-size: 18rpx; margin-top: 14rpx; }
 .distribution-row { margin-bottom: 26rpx; }
 .distribution-heading { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12rpx; font-size: 24rpx; }

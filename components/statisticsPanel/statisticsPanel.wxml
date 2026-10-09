@@ -92,7 +92,7 @@
           </view>
           <view class="trend-detail" wx:if="{{selectedBucket}}">
             <text>{{selectedBucket.dateLabel}}</text>
-            <text>{{selectedBucket.count}} 条 · 均分 {{selectedBucket.averageScoreText}}</text>
+            <text class="trend-detail-value">{{selectedBucket.count}} 条 · 均分 {{selectedBucket.averageScoreText}}</text>
           </view>
           <text class="chart-hint">轻触柱形查看详情 · 左右滑动查看完整趋势</text>
         </view>
