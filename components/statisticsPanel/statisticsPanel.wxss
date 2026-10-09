@@ -1,0 +1,113 @@
+.statistics-panel {
+  --stats-ink: #2d2a32;
+  --stats-muted: #77717b;
+  --stats-faint: #a09aa4;
+  --stats-line: rgba(45, 42, 50, 0.12);
+  --stats-track: rgba(45, 42, 50, 0.07);
+  --stats-surface: rgba(255, 255, 255, 0.72);
+  --stats-accent: #6b5f7a;
+  position: absolute;
+  inset: 0;
+  padding: 156rpx 48rpx 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  color: var(--stats-ink);
+}
+.statistics-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 36rpx;
+}
+.statistics-kicker {
+  display: block;
+  color: var(--stats-muted);
+  font-size: 20rpx;
+  letter-spacing: 4rpx;
+  margin-bottom: 12rpx;
+}
+.statistics-title {
+  font-family: 'SourceHanSerifCN', Georgia, serif;
+  font-size: 50rpx;
+  letter-spacing: 4rpx;
+  line-height: 1.2;
+}
+.statistics-updated {
+  color: var(--stats-faint);
+  font-size: 20rpx;
+  padding-bottom: 4rpx;
+}
+.range-control {
+  display: flex;
+  padding: 6rpx;
+  border: 1rpx solid var(--stats-line);
+  border-radius: 16rpx;
+  gap: 6rpx;
+  margin-bottom: 12rpx;
+}
+.range-option {
+  flex: 1;
+  text-align: center;
+  font-size: 24rpx;
+  padding: 16rpx 0;
+  border-radius: 10rpx;
+  color: var(--stats-muted);
+}
+.range-option.is-active {
+  color: var(--stats-ink);
+  background: var(--stats-surface);
+  font-weight: 500;
+}
+.statistics-scroll { flex: 1; height: 0; min-height: 0; }
+.statistics-body { padding: 32rpx 0 calc(env(safe-area-inset-bottom) + 190rpx); }
+.summary-hero { padding: 10rpx 0 36rpx; }
+.summary-eyebrow { display: flex; justify-content: space-between; align-items: center; font-size: 26rpx; }
+.summary-period { color: var(--stats-muted); font-family: Georgia, serif; font-size: 24rpx; }
+.summary-number-row { display: flex; align-items: baseline; gap: 14rpx; margin: 14rpx 0; }
+.summary-number { font-family: Georgia, 'Times New Roman', serif; font-size: 112rpx; line-height: 1.05; font-variant-numeric: tabular-nums; letter-spacing: -4rpx; }
+.summary-number-unit { font-size: 26rpx; color: var(--stats-muted); }
+.summary-footnote { font-size: 22rpx; color: var(--stats-muted); }
+.summary-metrics { display: flex; padding: 28rpx 0; border-top: 1rpx solid var(--stats-line); border-bottom: 1rpx solid var(--stats-line); }
+.summary-metric { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 12rpx; }
+.summary-metric + .summary-metric { padding-left: 24rpx; border-left: 1rpx solid var(--stats-line); }
+.metric-label { font-size: 22rpx; color: var(--stats-muted); }
+.metric-number { font-family: Georgia, serif; font-size: 36rpx; font-variant-numeric: tabular-nums; overflow-wrap: break-word; }
+.metric-unit { color: var(--stats-faint); font-size: 19rpx; }
+.insight-section { margin-top: 48rpx; }
+.insight-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 28rpx; }
+.insight-title { font-family: 'SourceHanSerifCN', Georgia, serif; font-size: 29rpx; }
+.insight-caption { color: var(--stats-muted); font-size: 20rpx; }
+.trend-plot { display: flex; gap: 14rpx; height: 210rpx; }
+.trend-axis { display: flex; flex-direction: column; justify-content: space-between; width: 24rpx; flex-shrink: 0; padding: 0 0 43rpx; color: var(--stats-faint); font-family: Georgia, serif; font-size: 18rpx; }
+.trend-scroll { flex: 1; width: 0; height: 210rpx; }
+.trend-columns { display: flex; height: 208rpx; min-width: 100%; border-bottom: 1rpx solid var(--stats-line); }
+.trend-column { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 16rpx; }
+.trend-bar-track { display: flex; justify-content: center; align-items: flex-end; height: 163rpx; width: 100%; }
+.trend-bar { width: 22rpx; background: var(--stats-accent); opacity: 0.32; border-radius: 4rpx 4rpx 0 0; min-height: 3rpx; }
+.trend-column.is-selected .trend-bar { opacity: 1; }
+.trend-bar.is-zero { background: var(--stats-line); }
+.trend-label { color: var(--stats-faint); font-size: 18rpx; white-space: nowrap; }
+.trend-column.is-selected .trend-label { color: var(--stats-ink); }
+.trend-detail { display: flex; align-items: center; justify-content: space-between; font-size: 22rpx; margin-top: 22rpx; color: var(--stats-muted); }
+.trend-detail text:last-child { color: var(--stats-ink); }
+.chart-hint { display: block; color: var(--stats-faint); font-size: 18rpx; margin-top: 14rpx; }
+.distribution-row { margin-bottom: 26rpx; }
+.distribution-heading { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12rpx; font-size: 24rpx; }
+.distribution-count { font-family: Georgia, 'SourceHanSerifCN', serif; }
+.distribution-percent { display: inline-block; width: 76rpx; text-align: right; color: var(--stats-muted); font-size: 20rpx; }
+.distribution-track { height: 6rpx; border-radius: 3rpx; background: var(--stats-track); overflow: hidden; }
+.distribution-fill { height: 100%; background: var(--stats-accent); border-radius: inherit; }
+.method-row { display: flex; align-items: center; padding: 20rpx 0; border-top: 1rpx solid var(--stats-line); font-size: 24rpx; gap: 24rpx; }
+.method-rank { font-family: Georgia, serif; color: var(--stats-faint); font-size: 20rpx; }
+.method-name { flex: 1; }
+.method-count { font-family: Georgia, 'SourceHanSerifCN', serif; color: var(--stats-muted); font-size: 22rpx; }
+.statistics-footer { display: flex; flex-direction: column; gap: 10rpx; margin-top: 48rpx; padding-top: 24rpx; border-top: 1rpx solid var(--stats-line); color: var(--stats-faint); font-size: 18rpx; line-height: 1.6; }
+.statistics-state { min-height: 500rpx; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16rpx; }
+.statistics-empty { display: flex; flex-direction: column; align-items: center; gap: 16rpx; padding: 70rpx 0 24rpx; }
+.state-title { font-family: 'SourceHanSerifCN', Georgia, serif; font-size: 28rpx; }
+.state-description { color: var(--stats-muted); font-size: 22rpx; }
+.statistics-button { margin: 16rpx 0 0; padding: 0 42rpx; font-size: 24rpx; color: var(--stats-ink); background: var(--stats-surface); border: 1rpx solid var(--stats-line); border-radius: 12rpx; }
+.statistics-button::after { border: none; }
+.loading-rule { width: 70rpx; height: 2rpx; background: var(--stats-accent); margin-bottom: 24rpx; animation: loading-pulse 1.2s ease-in-out infinite; }
+@keyframes loading-pulse { 0%, 100% { opacity: 0.2; transform: scaleX(0.5); } 50% { opacity: 0.8; transform: scaleX(1); } }

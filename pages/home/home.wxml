@@ -1,13 +1,6 @@
 <!--home.wxml-->
 
-<!-- Splash 启动画面组件 -->
-<splash-screen
-  wx:if="{{showSplash}}"
-  bind:complete="onSplashComplete"
-/>
-
-<!-- 主内容（等待 splash 完成后显示） -->
-<view class="page" wx:if="{{!showSplash}}">
+<view class="page">
   <view class="content" wx:if="{{activeTab === 'today'}}">
     <!-- 日期显示 -->
     <view class="date-display">{{currentDate}}</view>
@@ -32,7 +25,7 @@
     <view class="decorative-line"></view>
   </view>
 
-  <view class="stats-panel" wx:if="{{activeTab === 'stats'}}">
+  <view class="stats-panel" wx:if="{{activeTab === 'history'}}">
     <view class="stats-header">
       <text class="stats-title">历史记录</text>
       <text class="stats-subtitle">把每一次味道收进记忆</text>
@@ -198,12 +191,16 @@
     </view>
   </view>
 
-  <!-- 流动墨水概念 - 底部Tab栏 -->
+  <statistics-panel id="statistics-panel"
+                    wx:if="{{activeTab === 'stats'}}"
+                    bind:create="onAddRecord" />
+
+  <!-- 底部导航 -->
   <view class="floating-tab-bar">
     <!-- 毛玻璃胶囊容器 -->
     <view class="tab-capsule">
       <!-- 流动墨水背景指示器 -->
-      <view class="ink-flow-indicator" style="transform: translateX({{activeTab === 'today' ? '0' : '100%'}})"></view>
+      <view class="ink-flow-indicator" style="transform: translateX({{activeTab === 'today' ? '0' : (activeTab === 'history' ? '100%' : '200%')}})"></view>
 
       <!-- Today Tab -->
       <view class="tab-item {{activeTab === 'today' ? 'active' : ''}}"
@@ -218,9 +215,22 @@
             <view class="ripple ripple-3"></view>
           </view>
         </view>
-        <text class="tab-label">Today</text>
+        <text class="tab-label">今日</text>
         <!-- 激活态脉冲光晕 -->
         <view class="pulse-halo" wx:if="{{activeTab === 'today'}}"></view>
+      </view>
+
+      <view class="tab-item {{activeTab === 'history' ? 'active' : ''}}"
+            bindtap="onTabChange"
+            data-tab="history">
+        <view class="tab-icon-wrapper">
+          <view class="icon-history">
+            <view class="history-line"></view>
+            <view class="history-line"></view>
+            <view class="history-line short"></view>
+          </view>
+        </view>
+        <text class="tab-label">历史记录</text>
       </view>
 
       <!-- 统计 Tab -->

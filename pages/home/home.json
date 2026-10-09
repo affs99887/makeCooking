@@ -5,7 +5,7 @@
   "enablePullDownRefresh": false,
   "disableScroll": false,
   "usingComponents": {
-    "splash-screen": "/components/splashScreen/splashScreen",
+    "statistics-panel": "/components/statisticsPanel/statisticsPanel",
     "record-drawer": "/components/recordDrawer/recordDrawer"
   }
 }

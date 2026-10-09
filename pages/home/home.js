@@ -31,8 +31,6 @@ const buildDayOptions = days => {
 
 Page({
   data: {
-    showSplash: true,      // 新增：控制 splash 显示
-    showContent: false,    // 新增：控制内容动画
     currentDate: '',
     greeting: '',
     subtitle: '',
@@ -60,43 +58,23 @@ Page({
   },
 
   onLoad() {
-    // 不立即加载，等待 splash 完成
-    console.log('[Home] Page loaded, waiting for splash')
     this.recordsFetching = false
     this.recordsScrollTop = 0
     this.recordsViewHeight = 0
     this.recordsContentHeight = 0
+    this.updateGreeting()
   },
 
   onShow() {
-    // 仅在 splash 已完成时更新
-    if (!this.data.showSplash) {
-      this.updateGreeting()
-    }
-    if (this.data.activeTab === 'stats') {
+    this.updateGreeting()
+    if (this.data.activeTab === 'history') {
       this.setData({ recordsStatus: 'loading' })
       this.loadRecords(true, false)
       this.initScrollIndicatorMetrics()
     }
-  },
-
-  /**
-   * Splash 完成回调
-   */
-  onSplashComplete(e) {
-    console.log('[Home] Splash complete at:', e.detail.timestamp)
-
-    this.setData({
-      showSplash: false
-    })
-
-    // 延迟 100ms 后显示内容并开始动画
-    setTimeout(() => {
-      this.setData({
-        showContent: true
-      })
-      this.updateGreeting()
-    }, 100)
+    if (this.data.activeTab === 'stats') {
+      this.refreshStatistics()
+    }
   },
 
   /**
@@ -188,7 +166,8 @@ Page({
       .add({ data: payload })
       .then(res => {
         console.log('[Home] Record saved to cloud:', res)
-        if (this.data.activeTab === 'stats') {
+        this.refreshStatistics()
+        if (this.data.activeTab === 'history') {
           this.setData({ recordsStatus: 'loading' })
           this.loadRecords(true, false)
         }
@@ -236,28 +215,32 @@ Page({
    */
   onTabChange(e) {
     const tab = e.currentTarget.dataset.tab
+    if (!['today', 'history', 'stats'].includes(tab) || tab === this.data.activeTab) {
+      return
+    }
 
     // 触觉反馈
     wx.vibrateShort({ type: 'light' })
 
     // 切换 tab
     const nextData = { activeTab: tab }
-    if (tab === 'stats') {
+    if (tab === 'history') {
       nextData.recordsStatus = 'loading'
     }
     this.setData(nextData)
 
-    if (tab === 'stats') {
+    if (tab === 'history') {
       this.loadRecords(true, false)
       this.initScrollIndicatorMetrics()
     }
 
-    // 提示（可选）
-    const tabName = tab === 'today' ? 'Today' : '统计'
-    console.log('切换到:', tabName)
+  },
 
-    // 可以在这里添加页面切换逻辑
-    // 例如显示/隐藏不同的内容区域
+  refreshStatistics() {
+    const statistics = this.selectComponent('#statistics-panel')
+    if (statistics) {
+      statistics.reload()
+    }
   },
 
   /**
@@ -344,7 +327,8 @@ Page({
           icon: 'success',
           duration: 2000
         })
-        if (this.data.activeTab === 'stats') {
+        this.refreshStatistics()
+        if (this.data.activeTab === 'history') {
           this.setData({ recordsStatus: 'loading' })
           this.loadRecords(true, false)
         }
@@ -394,7 +378,8 @@ Page({
           icon: 'success',
           duration: 2000
         })
-        if (this.data.activeTab === 'stats') {
+        this.refreshStatistics()
+        if (this.data.activeTab === 'history') {
           this.setData({ recordsStatus: 'loading' })
           this.loadRecords(true, false)
         }
@@ -946,7 +931,7 @@ Page({
   },
 
   initScrollIndicatorMetrics(scrollHeight) {
-    if (this.data.activeTab !== 'stats') {
+    if (this.data.activeTab !== 'history') {
       return
     }
     if (scrollHeight) {

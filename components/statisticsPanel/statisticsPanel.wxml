@@ -1,0 +1,129 @@
+<view class="statistics-panel">
+  <view class="statistics-heading">
+    <view>
+      <text class="statistics-kicker">记录概览</text>
+      <text class="statistics-title">统计</text>
+    </view>
+    <text class="statistics-updated" wx:if="{{updatedTime && status === 'loaded'}}">更新于 {{updatedTime}}</text>
+  </view>
+
+  <view class="range-control">
+    <view class="range-option {{range === item.key ? 'is-active' : ''}}"
+          wx:for="{{ranges}}" wx:key="key"
+          data-range="{{item.key}}" bindtap="onRangeChange">{{item.label}}</view>
+  </view>
+
+  <scroll-view class="statistics-scroll" scroll-y enhanced show-scrollbar="{{false}}"
+               refresher-enabled refresher-triggered="{{refreshing}}"
+               bindrefresherrefresh="onRefresh">
+    <view class="statistics-body">
+      <view class="statistics-state" wx:if="{{status === 'loading'}}">
+        <view class="loading-rule"></view>
+        <text class="state-title">正在汇总记录</text>
+        <text class="state-description">让每一次记录都被看见</text>
+      </view>
+      <view class="statistics-state" wx:elif="{{status === 'error'}}">
+        <text class="state-title">暂时无法读取统计</text>
+        <text class="state-description">请检查网络，再试一次</text>
+        <button class="statistics-button" bindtap="onRetry">重新加载</button>
+      </view>
+      <block wx:else>
+        <view class="summary-hero">
+          <view class="summary-eyebrow">
+            <text>记录数</text>
+            <text class="summary-period">{{summary.rangeLabel}}</text>
+          </view>
+          <view class="summary-number-row">
+            <text class="summary-number">{{summary.recordCountText}}</text>
+            <text class="summary-number-unit">条</text>
+          </view>
+          <text class="summary-footnote">在 {{summary.activeDays}} 个日子里留下记录</text>
+        </view>
+
+        <view class="summary-metrics">
+          <view class="summary-metric">
+            <text class="metric-label">累计次数</text>
+            <text class="metric-number">{{summary.activityCountText}}</text>
+            <text class="metric-unit">次</text>
+          </view>
+          <view class="summary-metric">
+            <text class="metric-label">平均评分</text>
+            <text class="metric-number">{{summary.averageScoreText}}</text>
+            <text class="metric-unit">分</text>
+          </view>
+          <view class="summary-metric">
+            <text class="metric-label">最高评分</text>
+            <text class="metric-number">{{summary.bestScoreText}}</text>
+            <text class="metric-unit">分</text>
+          </view>
+        </view>
+
+        <view class="statistics-empty" wx:if="{{summary.recordCount === 0}}">
+          <text class="state-title">这个时段还没有记录</text>
+          <text class="state-description">记下今天，慢慢积累自己的轨迹</text>
+          <button class="statistics-button" bindtap="onCreate">记录今日</button>
+        </view>
+
+        <view class="insight-section" wx:if="{{summary.recordCount > 0}}">
+          <view class="insight-header">
+            <text class="insight-title">{{summary.trendTitle}}</text>
+            <text class="insight-caption">{{summary.trendCaption}}</text>
+          </view>
+          <view class="trend-plot">
+            <view class="trend-axis">
+              <text>{{summary.trendMax}}</text>
+              <text>{{summary.trendMiddle}}</text>
+              <text>0</text>
+            </view>
+            <scroll-view class="trend-scroll" scroll-x enhanced show-scrollbar="{{false}}"
+                         scroll-into-view="{{trendScrollTarget}}">
+              <view class="trend-columns" style="width: {{summary.trend.length * 48}}rpx;">
+                <view class="trend-column {{selectedBucketKey === bucket.key ? 'is-selected' : ''}}"
+                      id="trend-{{index}}" wx:for="{{summary.trend}}" wx:key="key" wx:for-item="bucket"
+                      data-index="{{index}}" bindtap="onBucketTap"
+                      aria-label="{{bucket.dateLabel}}，{{bucket.count}}条记录">
+                  <view class="trend-bar-track">
+                    <view class="trend-bar {{bucket.count === 0 ? 'is-zero' : ''}}" style="height: {{bucket.height}}%;"></view>
+                  </view>
+                  <text class="trend-label">{{bucket.label}}</text>
+                </view>
+              </view>
+            </scroll-view>
+          </view>
+          <view class="trend-detail" wx:if="{{selectedBucket}}">
+            <text>{{selectedBucket.dateLabel}}</text>
+            <text>{{selectedBucket.count}} 条 · 均分 {{selectedBucket.averageScoreText}}</text>
+          </view>
+          <text class="chart-hint">轻触柱形查看详情 · 左右滑动查看完整趋势</text>
+        </view>
+
+        <view class="insight-section" wx:if="{{summary.breakdown.length}}">
+          <view class="insight-header">
+            <text class="insight-title">项目分布</text>
+            <text class="insight-caption">按累计次数</text>
+          </view>
+          <view class="distribution-row" wx:for="{{summary.breakdown}}" wx:key="key">
+            <view class="distribution-heading">
+              <text class="distribution-name">{{item.label}}</text>
+              <view><text class="distribution-count">{{item.countText}} 次</text><text class="distribution-percent">{{item.percent}}%</text></view>
+            </view>
+            <view class="distribution-track"><view class="distribution-fill" style="width: {{item.width}}%;"></view></view>
+          </view>
+        </view>
+
+        <view class="insight-section" wx:if="{{summary.methodBreakdown.length}}">
+          <view class="insight-header"><text class="insight-title">常用手法</text><text class="insight-caption">出现频率</text></view>
+          <view class="method-row" wx:for="{{summary.methodBreakdown}}" wx:key="label">
+            <text class="method-rank">0{{index + 1}}</text>
+            <text class="method-name">{{item.label}}</text>
+            <text class="method-count">{{item.count}} 条</text>
+          </view>
+        </view>
+        <view class="statistics-footer">
+          <text>次数按各项目的叠加数量累计</text>
+          <text>评分按每条记录计算 · {{summary.scoredCount}} 条有评分</text>
+        </view>
+      </block>
+    </view>
+  </scroll-view>
+</view>
