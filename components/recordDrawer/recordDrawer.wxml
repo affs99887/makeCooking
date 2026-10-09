@@ -243,17 +243,17 @@
           <view class="score-display">
             <text class="score-value {{scoreAnimClass}}">{{currentScore}}</text>
             <text class="score-unit">分</text>
-            <text class="score-max">/ {{scoreMax > 0 ? '历史最高' : '默认上限'}} {{totalScoreMax}}</text>
+            <text class="score-max">/ {{scoreMax > 0 ? '历史最高' : '默认上限'}} {{scoreLimit}}</text>
           </view>
 
           <view class="slider-container">
             <view class="slider-rail"></view>
-            <view class="slider-fill" style="width: calc((100% - 32rpx) * {{currentScore / totalScoreMax}});"></view>
-            <view class="slider-glow" style="width: calc((100% - 32rpx) * {{currentScore / totalScoreMax}});"></view>
+            <view class="slider-fill" style="width: calc((100% - 32rpx) * {{currentScore / scoreLimit}});"></view>
+            <view class="slider-glow" style="width: calc((100% - 32rpx) * {{currentScore / scoreLimit}});"></view>
             <slider
               class="score-slider"
               min="0"
-              max="{{totalScoreMax}}"
+              max="{{scoreLimit}}"
               step="{{scoreStep}}"
               value="{{currentScore}}"
               disabled="{{isReadonly || scoreMode !== 'total'}}"
@@ -267,11 +267,7 @@
           </view>
 
           <view class="score-markers">
-            <text class="marker">0</text>
-            <text class="marker">1000</text>
-            <text class="marker">2000</text>
-            <text class="marker">3000</text>
-            <text class="marker">{{totalScoreMax}}</text>
+            <text class="marker" wx:for="{{scoreMarkers}}" wx:key="*this">{{item}}</text>
           </view>
         </view>
 
@@ -292,18 +288,18 @@
                   <text class="score-type-count" wx:if="{{item.count > 1}}">x{{item.count}}</text>
                   <view class="score-type-score">
                     <text class="score-type-number">{{item.score}}</text>
-                    <text class="score-type-max">/ {{typeScoreMax}}</text>
+                    <text class="score-type-max">/ {{scoreLimit}}</text>
                   </view>
                 </view>
 
                 <view class="slider-container score-type-slider">
                   <view class="slider-rail"></view>
-                  <view class="slider-fill" style="width: calc((100% - 32rpx) * {{item.score / typeScoreMax}});"></view>
-                  <view class="slider-glow" style="width: calc((100% - 32rpx) * {{item.score / typeScoreMax}});"></view>
+                  <view class="slider-fill" style="width: calc((100% - 32rpx) * {{item.score / scoreLimit}});"></view>
+                  <view class="slider-glow" style="width: calc((100% - 32rpx) * {{item.score / scoreLimit}});"></view>
                   <slider
                     class="score-slider"
                     min="0"
-                    max="{{typeScoreMax}}"
+                    max="{{scoreLimit}}"
                     step="{{scoreStep}}"
                     value="{{item.score}}"
                     disabled="{{isReadonly || scoreMode !== 'perType'}}"
@@ -318,11 +314,7 @@
                 </view>
 
                 <view class="score-markers score-type-markers">
-                  <text class="marker">0</text>
-                  <text class="marker">1000</text>
-                  <text class="marker">2000</text>
-                  <text class="marker">3000</text>
-                  <text class="marker">4000</text>
+                  <text class="marker" wx:for="{{scoreMarkers}}" wx:key="*this">{{item}}</text>
                 </view>
               </view>
             </block>

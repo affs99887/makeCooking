@@ -71,6 +71,47 @@
       </picker>
     </view>
 
+    <view class="record-card top-record-card"
+          wx:if="{{topRecord}}"
+          bindtap="onTopRecordTap"
+          hover-class="top-record-card-hover">
+      <view class="top-score-panel">
+        <text class="top-score-kicker">最高记录</text>
+        <view class="top-score-display">
+          <text class="top-score-number">{{topRecord.score}}</text>
+          <text class="top-score-unit">分</text>
+        </view>
+        <text class="top-score-note">迄今为止</text>
+      </view>
+
+      <view class="top-record-seam">
+        <view class="top-record-notch notch-top"></view>
+        <view class="top-record-notch notch-bottom"></view>
+      </view>
+
+      <view class="top-record-details">
+        <view class="top-record-date-row">
+          <text class="top-record-date-label">记录于</text>
+          <text class="record-date top-record-date">{{topRecord.displayDateTime}}</text>
+        </view>
+
+        <view class="top-record-tags" wx:if="{{topRecord.tags.length}}">
+          <view class="top-record-tag"
+                wx:for="{{topRecord.tags}}"
+                wx:key="key"
+                wx:for-item="tag">
+            <text class="tag-name">{{tag.label}}</text>
+            <text class="tag-count" wx:if="{{tag.count > 1}}">x{{tag.count}}</text>
+          </view>
+        </view>
+
+        <view class="record-meta top-record-meta" wx:if="{{topRecord.methodLabel}}">
+          <text class="meta-label">手法</text>
+          <text class="meta-value">{{topRecord.methodLabel}}</text>
+        </view>
+      </view>
+    </view>
+
     <view class="stats-list-wrapper">
       <scroll-view class="records-scroll"
                    scroll-y
@@ -100,8 +141,8 @@
                 <view class="empty-ring ring-1"></view>
                 <view class="empty-ring ring-2"></view>
               </view>
-              <text class="empty-title">{{filtersActive ? '没有符合筛选的记录' : '还没有记录'}}</text>
-              <text class="empty-subtitle">{{filtersActive ? (recordsHasMore ? '轻触继续查找更早记录' : '试试调整筛选条件') : '从今天开始写下味道'}}</text>
+              <text class="empty-title">{{filtersActive ? '没有符合筛选的记录' : (topRecord ? '暂无更多记录' : '还没有记录')}}</text>
+              <text class="empty-subtitle">{{filtersActive ? (recordsHasMore ? '轻触继续查找更早记录' : '试试调整筛选条件') : (topRecord ? '最高记录已固定在上方' : '从今天开始写下味道')}}</text>
             </view>
           </view>
 

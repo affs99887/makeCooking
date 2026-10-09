@@ -41,6 +41,7 @@ Page({
     drawerMode: 'create',
     selectedRecord: null,
     scoreMax: 0,
+    topRecord: null,
     records: [],
     filteredRecords: [],
     recordsStatus: 'idle',
@@ -203,7 +204,7 @@ Page({
   },
 
   /**
-   * 获取当前最高评分（用于新增记录展示）
+   * 获取当前库内最高评分（用于所有评分滑块）
    */
   loadScoreMax() {
     if (!wx.cloud) {
@@ -282,6 +283,20 @@ Page({
       drawerMode: 'view',
       showDrawer: true
     })
+    this.loadScoreMax()
+  },
+
+  onTopRecordTap() {
+    const record = this.data.topRecord
+    if (!record) {
+      return
+    }
+    this.setData({
+      selectedRecord: record,
+      drawerMode: 'view',
+      showDrawer: true
+    })
+    this.loadScoreMax()
   },
 
   onRecordUpdate(e) {
@@ -419,6 +434,7 @@ Page({
         recordsHasMore: false
       }
       if (!isRefresh) {
+        nextData.topRecord = null
         nextData.records = []
         nextData.filteredRecords = []
         nextData.filtersActive = false
@@ -439,16 +455,33 @@ Page({
     }
 
     const db = wx.cloud.database()
-    db.collection('cooking_records')
+    const recordsRequest = db.collection('cooking_records')
       .orderBy('timestamp', 'desc')
       .limit(RECORDS_PAGE_SIZE)
       .get()
-      .then(res => {
+    const topRecordRequest = db.collection('cooking_records')
+      .orderBy('score', 'desc')
+      .limit(1)
+      .get()
+      .catch(error => {
+        console.error('[Home] Failed to load top record:', error)
+        return { data: [] }
+      })
+
+    Promise.all([recordsRequest, topRecordRequest])
+      .then(([res, topRecordRes]) => {
         const list = Array.isArray(res.data) ? res.data : []
+        const topRecordList = Array.isArray(topRecordRes.data) ? topRecordRes.data : []
         const records = this.formatRecords(list)
+        const topRecord = this.formatRecords(topRecordList)[0] || null
+        const scoreMax = topRecord && Number.isFinite(Number(topRecord.score))
+          ? Number(topRecord.score)
+          : 0
         const filterState = this.syncFilterOptions(records)
-        const filterResult = this.applyRecordFilters(records, filterState)
+        const filterResult = this.applyRecordFilters(records, filterState, topRecord)
         this.setData({
+          topRecord,
+          scoreMax,
           records,
           filteredRecords: filterResult.filteredRecords,
           filtersActive: filterResult.filtersActive,
@@ -475,6 +508,7 @@ Page({
           recordsLoadingMore: false
         }
         if (!isRefresh) {
+          nextData.topRecord = null
           nextData.records = []
           nextData.filteredRecords = []
           nextData.filtersActive = false
@@ -700,7 +734,7 @@ Page({
     }
   },
 
-  applyRecordFilters(records, filterState) {
+  applyRecordFilters(records, filterState, topRecord) {
     const yearOptions = filterState ? filterState.filterYearOptions : this.data.filterYearOptions
     const monthOptions = filterState ? filterState.filterMonthOptions : this.data.filterMonthOptions
     const dayOptions = filterState ? filterState.filterDayOptions : this.data.filterDayOptions
@@ -712,7 +746,12 @@ Page({
     const dayValue = this.getSelectedFilterValue(dayOptions, dayIndex)
     const filtersActive = Boolean(yearValue || monthValue || dayValue)
 
+    const pinnedRecord = topRecord === undefined ? this.data.topRecord : topRecord
+    const pinnedRecordId = pinnedRecord && pinnedRecord.recordId
     const filteredRecords = (records || []).filter(record => {
+      if (pinnedRecordId && record.recordId === pinnedRecordId) {
+        return false
+      }
       if (!filtersActive) {
         return true
       }

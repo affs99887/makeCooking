@@ -31,9 +31,19 @@ const SCORE_MODE = {
   total: 'total',
   perType: 'perType'
 }
-const TOTAL_SCORE_MAX = 4100
-const TYPE_SCORE_MAX = 4000
+const DEFAULT_SCORE_MAX = 9000
 const SCORE_STEP = 100
+const buildScoreMarkers = max => {
+  const markers = [0]
+  for (let index = 1; index < 4; index += 1) {
+    const value = Math.round(max * index / (4 * SCORE_STEP)) * SCORE_STEP
+    if (value > markers[markers.length - 1] && value < max) {
+      markers.push(value)
+    }
+  }
+  markers.push(max)
+  return markers
+}
 const SECTION_EXIT_DURATION = 360
 const SCORE_SLOT_DURATION = 620
 const SLOT_ENTER_DELAY = 200
@@ -83,7 +93,7 @@ Component({
     },
     scoreMax: {
       type: Number,
-      value: TOTAL_SCORE_MAX,
+      value: DEFAULT_SCORE_MAX,
       observer: 'onScoreMaxChange'
     }
   },
@@ -130,8 +140,8 @@ Component({
     scoreSlotOpen: false,
     scoreVisible: false,
     showScoreToggle: false,
-    totalScoreMax: TOTAL_SCORE_MAX,
-    typeScoreMax: TYPE_SCORE_MAX,
+    scoreLimit: DEFAULT_SCORE_MAX,
+    scoreMarkers: buildScoreMarkers(DEFAULT_SCORE_MAX),
     scoreStep: SCORE_STEP,
     currentScore: 0,         // 当前评分（总分模式）
     canSave: false           // 是否可以保存
@@ -761,7 +771,7 @@ Component({
       if (this.data.isReadonly || this.data.scoreMode !== SCORE_MODE.total) {
         return
       }
-      const currentScore = Number(e.detail.value || 0)
+      const currentScore = this.clampScore(e.detail.value)
       const activeTypes = this.getActiveTypes(this.data.typeCounts)
       const nextData = {
         currentScore,
@@ -785,7 +795,7 @@ Component({
       if (this.data.isReadonly || this.data.scoreMode !== SCORE_MODE.total) {
         return
       }
-      const score = Number(e.detail.value || 0)
+      const score = this.clampScore(e.detail.value)
 
       // 触觉反馈
       wx.vibrateShort({ type: 'light' })
@@ -819,7 +829,7 @@ Component({
       if (!type) {
         return
       }
-      const score = Number(e.detail.value || 0)
+      const score = this.clampScore(e.detail.value)
       const typeScores = Object.assign({}, this.data.typeScores, {
         [type]: score
       })
@@ -844,7 +854,7 @@ Component({
       if (!type) {
         return
       }
-      const score = Number(e.detail.value || 0)
+      const score = this.clampScore(e.detail.value)
 
       // 触觉反馈
       wx.vibrateShort({ type: 'light' })
@@ -1002,6 +1012,7 @@ Component({
       this.clearMethodTimers()
       this.clearScoreTimers()
       const dateState = this.getDateTimeState(new Date())
+      const scoreLimit = this.normalizeScoreMax(this.properties.scoreMax)
       this.setData(Object.assign({}, dateState, {
         typeCounts: Object.assign({}, BASE_TYPE_COUNTS),
         typeScores: Object.assign({}, BASE_TYPE_SCORES),
@@ -1021,6 +1032,8 @@ Component({
         scoreVisible: false,
         showScoreToggle: false,
         currentScore: 0,
+        scoreLimit,
+        scoreMarkers: buildScoreMarkers(scoreLimit),
         note: '',
         canSave: false,
         currentRecordId: '',
@@ -1190,9 +1203,37 @@ Component({
     },
 
     onScoreMaxChange(scoreMax) {
-      const normalized = this.normalizeScoreMax(scoreMax)
-      if (normalized !== this.data.totalScoreMax) {
-        this.setData({ totalScoreMax: normalized })
+      const scoreLimit = this.normalizeScoreMax(scoreMax)
+      const nextData = {}
+      if (scoreLimit !== this.data.scoreLimit) {
+        nextData.scoreLimit = scoreLimit
+        nextData.scoreMarkers = buildScoreMarkers(scoreLimit)
+      }
+      if (!this.data.isReadonly) {
+        const currentScore = this.clampScore(this.data.currentScore, scoreLimit)
+        const typeScores = Object.assign({}, this.data.typeScores)
+        let scoreChanged = currentScore !== this.data.currentScore
+        TYPE_ORDER.forEach(key => {
+          const cappedScore = this.clampScore(typeScores[key], scoreLimit)
+          if (cappedScore !== typeScores[key]) {
+            typeScores[key] = cappedScore
+            scoreChanged = true
+          }
+        })
+        if (scoreChanged) {
+          nextData.currentScore = currentScore
+          nextData.typeScores = typeScores
+          nextData.scoreTypeList = this.buildScoreTypeList(this.data.typeCounts, typeScores)
+          nextData.totalScore = this.data.scoreMode === SCORE_MODE.total
+            ? currentScore
+            : this.computePerTypeTotal(this.data.typeCounts, typeScores)
+        }
+      }
+      if (Object.keys(nextData).length > 0) {
+        this.setData(nextData)
+        if (nextData.totalScore !== undefined) {
+          this.checkCanSave()
+        }
       }
     },
 
@@ -1213,15 +1254,20 @@ Component({
       return 'create'
     },
 
-    normalizeScoreMax(rawScore, currentScore) {
+    normalizeScoreMax(rawScore) {
       const value = Number(rawScore)
       if (!Number.isFinite(value) || value <= 0) {
-        return TOTAL_SCORE_MAX
+        return DEFAULT_SCORE_MAX
       }
-      const safeCurrentScore = Number.isFinite(Number(currentScore))
-        ? Number(currentScore)
-        : Number(this.data.currentScore || 0)
-      return Math.max(value, safeCurrentScore)
+      return value
+    },
+
+    clampScore(rawScore, limit) {
+      const value = Number(rawScore)
+      if (!Number.isFinite(value)) {
+        return 0
+      }
+      return Math.min(Math.max(value, 0), limit || this.data.scoreLimit)
     },
 
     setMode(mode) {
@@ -1268,7 +1314,11 @@ Component({
         })
         currentScore = singleScore
       }
-      const totalScoreMax = this.normalizeScoreMax(this.properties.scoreMax, currentScore)
+      const scoreLimit = Math.max(
+        this.normalizeScoreMax(this.properties.scoreMax),
+        score || 0,
+        currentScore || 0
+      )
       const scoreState = this.getScoreState(
         typeCounts,
         typeScores,
@@ -1293,7 +1343,8 @@ Component({
         scoreVisible: modeState.showScoreSection,
         showScoreToggle: modeState.showScoreToggle,
         currentScore,
-        totalScoreMax,
+        scoreLimit,
+        scoreMarkers: buildScoreMarkers(scoreLimit),
         note,
         currentRecordId: recordId,
         showDateEditor: false
