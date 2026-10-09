@@ -76,6 +76,10 @@ Component({
   },
 
   properties: {
+    theme: {
+      type: String,
+      value: 'light'
+    },
     visible: {
       type: Boolean,
       value: false,
@@ -1430,7 +1434,7 @@ Component({
         title: '删除记录',
         content: '确定要删除这条记录吗？',
         confirmText: '删除',
-        confirmColor: '#d57b73',
+        confirmColor: this.properties.theme === 'dark' ? '#bcbcbc' : '#d57b73',
         cancelText: '取消',
         success: res => {
           if (res.confirm) {

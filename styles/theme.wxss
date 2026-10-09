@@ -1,0 +1,57 @@
+.theme-light,
+.theme-dark {
+  --background-rgb: 250, 248, 245;
+  --background-alt-rgb: 244, 240, 248;
+  --background-end-rgb: 244, 240, 248;
+  --surface-rgb: 255, 255, 255;
+  --surface-soft-rgb: 246, 242, 251;
+  --surface-tint-rgb: 245, 240, 251;
+  --card-rgb: 255, 253, 251;
+  --accent-rgb: 184, 169, 211;
+  --accent-deep-rgb: 139, 123, 168;
+  --secondary-rgb: 232, 196, 184;
+  --gold-rgb: 212, 165, 116;
+  --ink-rgb: 45, 42, 50;
+  --muted-rgb: 107, 95, 122;
+  --faint-rgb: 155, 143, 168;
+  --featured-rgb: 102, 88, 115;
+  --on-featured-rgb: 255, 255, 255;
+  --shadow-rgb: 86, 73, 101;
+  --notch-rgb: 248, 245, 247;
+  --danger-rgb: 139, 86, 86;
+  --line-rgb: 45, 42, 50;
+  --cream: rgb(var(--background-rgb));
+  --lavender: rgb(var(--accent-rgb));
+  --lavender-deep: rgb(var(--accent-deep-rgb));
+  --rose: rgb(var(--secondary-rgb));
+  --gold: rgb(var(--gold-rgb));
+  --ink: rgb(var(--ink-rgb));
+  --ink-soft: rgb(var(--muted-rgb));
+  --ink-muted: rgb(var(--faint-rgb));
+  --glass: rgba(var(--surface-rgb), 0.78);
+  --glass-strong: rgba(var(--surface-rgb), 0.92);
+}
+
+/* 暗黑主题的全部颜色仅使用等值 RGB，保持纯灰阶。 */
+.theme-dark {
+  --background-rgb: 0, 0, 0;
+  --background-alt-rgb: 17, 17, 17;
+  --background-end-rgb: 0, 0, 0;
+  --surface-rgb: 28, 28, 28;
+  --surface-soft-rgb: 20, 20, 20;
+  --surface-tint-rgb: 24, 24, 24;
+  --card-rgb: 17, 17, 17;
+  --accent-rgb: 168, 168, 168;
+  --accent-deep-rgb: 204, 204, 204;
+  --secondary-rgb: 116, 116, 116;
+  --gold-rgb: 188, 188, 188;
+  --ink-rgb: 230, 230, 230;
+  --muted-rgb: 160, 160, 160;
+  --faint-rgb: 136, 136, 136;
+  --featured-rgb: 32, 32, 32;
+  --on-featured-rgb: 230, 230, 230;
+  --shadow-rgb: 0, 0, 0;
+  --notch-rgb: 0, 0, 0;
+  --danger-rgb: 188, 188, 188;
+  --line-rgb: 136, 136, 136;
+}

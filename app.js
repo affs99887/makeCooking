@@ -1,6 +1,9 @@
 // app.js
+const { initializeAppearance } = require('./utils/theme')
+
 App({
   onLaunch() {
+    initializeAppearance()
     if (wx.cloud) {
       wx.cloud.init({
         env: 'cloudbase-8grsywca3449ec3f',

@@ -1,6 +1,6 @@
 <!--home.wxml-->
 
-<view class="page">
+<view class="page theme-{{theme}}" style="--content-top: {{contentTop}}px;">
   <view class="content" wx:if="{{activeTab === 'today'}}">
     <!-- 日期显示 -->
     <view class="date-display">{{currentDate}}</view>
@@ -15,7 +15,7 @@
     <view class="action-container">
       <button class="add-button" bindtap="onAddRecord" hover-class="add-button-hover">
         <view class="button-content">
-          <text class="button-icon">✦</text>
+          <text class="button-icon">{{theme === 'dark' ? '＋' : '✦'}}</text>
           <text class="button-text">记录今日</text>
         </view>
       </button>
@@ -193,6 +193,8 @@
 
   <statistics-panel id="statistics-panel"
                     wx:if="{{activeTab === 'stats'}}"
+                    theme="{{theme}}"
+                    content-top="{{contentTop}}"
                     bind:create="onAddRecord" />
 
   <!-- 底部导航 -->
@@ -260,6 +262,7 @@
 
   <!-- 记录抽屉组件 -->
   <record-drawer
+    theme="{{theme}}"
     visible="{{showDrawer}}"
     mode="{{drawerMode}}"
     record="{{selectedRecord}}"
