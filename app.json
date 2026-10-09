@@ -4,11 +4,14 @@
     "pages/logs/logs"
   ],
   "window": {
-    "navigationBarTextStyle": "black",
+    "navigationBarTextStyle": "@navigationTextStyle",
     "navigationBarTitleText": "makeCooking",
-    "navigationBarBackgroundColor": "#FAF8F5",
-    "backgroundColor": "#FAF8F5"
+    "navigationBarBackgroundColor": "@navigationBackground",
+    "backgroundColor": "@pageBackground",
+    "backgroundTextStyle": "@backgroundTextStyle"
   },
+  "darkmode": true,
+  "themeLocation": "theme.json",
   "style": "v2",
   "componentFramework": "glass-easel",
   "sitemapLocation": "sitemap.json",

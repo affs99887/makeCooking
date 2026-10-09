@@ -1,4 +1,5 @@
 // pages/home/home.js
+const { getAppearance, subscribeAppearance, setAppearancePreference, applyNativeAppearance } = require('../../utils/theme')
 const TYPE_LABELS = {
   standard: 'Standard',
   service: 'Service',
@@ -31,6 +32,10 @@ const buildDayOptions = days => {
 
 Page({
   data: {
+    theme: getAppearance().theme,
+    appearanceLabel: getAppearance().label,
+    appearanceTop: 32,
+    contentTop: 80,
     currentDate: '',
     greeting: '',
     subtitle: '',
@@ -58,6 +63,15 @@ Page({
   },
 
   onLoad() {
+    this.unsubscribeAppearance = subscribeAppearance(appearance => {
+      this.setData({ theme: appearance.theme, appearanceLabel: appearance.label })
+    })
+    if (wx.getMenuButtonBoundingClientRect) {
+      const menu = wx.getMenuButtonBoundingClientRect()
+      if (menu && menu.top > 0 && menu.bottom > menu.top) {
+        this.setData({ appearanceTop: menu.top, contentTop: menu.bottom + 20 })
+      }
+    }
     this.recordsFetching = false
     this.recordsScrollTop = 0
     this.recordsViewHeight = 0
@@ -66,6 +80,7 @@ Page({
   },
 
   onShow() {
+    applyNativeAppearance()
     this.updateGreeting()
     if (this.data.activeTab === 'history') {
       this.setData({ recordsStatus: 'loading' })
@@ -75,6 +90,20 @@ Page({
     if (this.data.activeTab === 'stats') {
       this.refreshStatistics()
     }
+  },
+
+  onUnload() {
+    if (this.unsubscribeAppearance) this.unsubscribeAppearance()
+  },
+
+  onAppearanceTap() {
+    const preferences = ['system', 'light', 'dark']
+    const current = getAppearance().preference
+    const labels = ['跟随系统', '浅色', '深色']
+    wx.showActionSheet({
+      itemList: labels.map((label, index) => `${preferences[index] === current ? '✓ ' : ''}${label}`),
+      success: result => setAppearancePreference(preferences[result.tapIndex])
+    })
   },
 
   /**

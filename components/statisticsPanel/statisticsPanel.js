@@ -8,6 +8,10 @@ const RANGES = [
 
 Component({
   options: { styleIsolation: 'isolated' },
+  properties: {
+    theme: { type: String, value: 'light' },
+    contentTop: { type: Number, value: 80 }
+  },
   data: {
     status: 'loading',
     refreshing: false,

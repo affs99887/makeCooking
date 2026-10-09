@@ -1,11 +1,13 @@
+@import "../../styles/theme.wxss";
+
 .statistics-panel {
-  --stats-ink: #2d2a32;
-  --stats-muted: #77717b;
-  --stats-faint: #a09aa4;
-  --stats-line: rgba(45, 42, 50, 0.12);
-  --stats-track: rgba(45, 42, 50, 0.07);
-  --stats-surface: rgba(255, 255, 255, 0.72);
-  --stats-accent: #6b5f7a;
+  --stats-ink: var(--ink);
+  --stats-muted: var(--ink-soft);
+  --stats-faint: var(--ink-muted);
+  --stats-line: rgba(var(--line-rgb), 0.16);
+  --stats-track: rgba(var(--line-rgb), 0.1);
+  --stats-surface: rgba(var(--surface-rgb), 0.72);
+  --stats-accent: var(--lavender-deep);
   position: absolute;
   inset: 0;
   padding: 156rpx 48rpx 0;

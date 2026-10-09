@@ -1,7 +1,7 @@
 <!-- components/recordDrawer/recordDrawer.wxml -->
 
 <!-- 遮罩层 -->
-<view class="drawer-mask {{visible ? 'show' : ''}}"
+<view class="drawer-mask theme-{{theme}} {{visible ? 'show' : ''}}"
       style="--mask-blur: {{maskBlur}}rpx;"
       bindtap="onMaskTap"
       wx:if="{{isAnimating}}">
@@ -259,7 +259,7 @@
               disabled="{{isReadonly || scoreMode !== 'total'}}"
               activeColor="rgba(0, 0, 0, 0)"
               backgroundColor="rgba(0, 0, 0, 0)"
-              block-color="#ffffff"
+              block-color="{{theme === 'dark' ? '#cccccc' : '#ffffff'}}"
               block-size="32"
               bindchange="onScoreChange"
               bindchanging="onScoreChanging"
@@ -305,7 +305,7 @@
                     disabled="{{isReadonly || scoreMode !== 'perType'}}"
                     activeColor="rgba(0, 0, 0, 0)"
                     backgroundColor="rgba(0, 0, 0, 0)"
-                    block-color="#ffffff"
+                    block-color="{{theme === 'dark' ? '#cccccc' : '#ffffff'}}"
                     block-size="32"
                     data-type="{{item.key}}"
                     bindchange="onTypeScoreChange"

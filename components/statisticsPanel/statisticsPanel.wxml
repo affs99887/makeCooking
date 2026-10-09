@@ -1,4 +1,4 @@
-<view class="statistics-panel">
+<view class="statistics-panel theme-{{theme}}" style="padding-top: {{contentTop}}px;">
   <view class="statistics-heading">
     <view>
       <text class="statistics-kicker">记录概览</text>

@@ -1,3 +1,5 @@
+@import "../../styles/theme.wxss";
+
 page {
   height: 100vh;
   display: flex;
@@ -5,7 +7,10 @@ page {
 }
 .scrollarea {
   flex: 1;
+  height: 100%;
   overflow-y: hidden;
+  background: rgb(var(--background-rgb));
+  color: var(--ink);
 }
 .log-item {
   margin-top: 20rpx;
